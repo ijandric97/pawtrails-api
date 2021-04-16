@@ -1,0 +1,74 @@
+// Creating tables
+Table users as U {
+  id int [pk, increment]
+  firstname string
+  lastname string
+  nickname string
+  email string
+  password string
+  image string
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table follows {
+  id int [pk, increment]
+  follower int [ref: > users.id]
+  following int [ref: > users.id]
+  created_at timestamp
+}
+
+Table locations {
+  id int [pk, increment]
+  longitude double
+  latitude double
+  name string
+  description text
+  type string
+  size int
+  created_by int [ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table favorites {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  location_id int [ref: > locations.id]
+  created_at timestamp
+}
+
+Table tags {
+  id int [pk, increment]
+  location_id int [ref: > locations.id]
+  name string
+  created_at timestamp
+}
+
+Table reviews {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  location_id int [ref: > locations.id]
+  grade int
+  comment text [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table pets {
+  id int [pk, increment]
+  owner int [ref: > users.id]
+  name string
+  breed string
+  size int
+  energy int
+  image string
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table pet_owners {
+  id int [pk, increment]
+  owner_id int [ref: > users.id]
+  pet_id int [ref: > pets.id]
+}
