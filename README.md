@@ -8,8 +8,8 @@ Not recomended but you can start the application locally. Keep in mind that you 
 
 1. Create an environment and activate it
 ```
-$ python3 -m venv env
-$ source env/bin/activate
+$ python3 -m venv venv
+$ source venv/bin/activate
 ```
 
 2. Update pip and install required packages
@@ -66,3 +66,48 @@ If you want to see redoc for some reason, you can do it at:
 http://localhost:8000/redoc
 ```
 > If the links are not working, use 127.0.0.1 instead of localhost
+
+## Migrations
+
+We use Alembic for migrations.
+To create a new migration use the following command:
+```
+$ alembic revision -m "name of your revision"
+```
+
+To run migrations do the following:
+```
+$ alembic upgrade head
+```
+
+We can also migrate specific revisions, or relative migrations:
+```
+$ alembic upgrade hash_of_the_revision
+$ alembic upgrade +2
+```
+
+We can check the history of current or all migrations with:
+```
+$ alembic current
+$ alembic history --verbose
+```
+
+To revert migration we use the following (using head reverts everything):
+```
+$ alembic downgrade hash_of_the_revision
+---
+$ alembic downgrade head
+```
+
+## Workflow && Code-Style
+
+The standard development environment its Visual Studio Code with Python, Docker and Comment Anchors. The formatter is Black and linting is done by Flake8.
+The allowed comment tags are the ones by Comment Anchors.
+
+
+## File structure
+The routes are located in the API folder.
+
+## TODO
+Investigate mypy and type-hints
+Sort out the pre-commit hook
