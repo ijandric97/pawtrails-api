@@ -1,4 +1,5 @@
-FROM python:3.8
+# NOTE: Do not use Alpine for python, it will fail since no GCCs
+FROM python:3.8-slim
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
