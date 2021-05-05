@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from py2neo.ogm import Property
+from pydantic import BaseModel as BaseSchema
+from pydantic import EmailStr
 
 from app.core.database import BaseModel, repository
 from app.core.security import get_password_hash, verify_password
@@ -57,3 +60,20 @@ class User(BaseModel):
     @password.setter
     def password(self, password: str) -> None:
         self._password = get_password_hash(password)
+
+
+class UserSchema(BaseSchema):
+    email: Optional[EmailStr]
+    username: Optional[str]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    is_active: Optional[bool] = True
+
+    class Config:
+        orm_mode = True
+
+
+class RegisterUserSchema(BaseSchema):
+    email: EmailStr
+    username: str
+    password: str

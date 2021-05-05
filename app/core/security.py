@@ -1,23 +1,33 @@
 from datetime import datetime, timedelta
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from jose import jwt
 from passlib.context import CryptContext
+from pydantic import BaseModel
 
 from app.core.settings import settings
 
-ALGORITHM = "HS256"
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: timedelta = None
+    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
 ) -> str:
-    """Creates a JWT acces token for the logged in user
+    """Creates a JWT access token for the logged in user
 
     Args:
-        subject (Union[str, Any]): [description]
-        expires_delta (timedelta, optional): [description]. Defaults to None.
+        subject (Union[str, Any]): Data which you wish to encode
+        expires_delta (Optional[timedelta]): How long it will last. Defaults to None.
 
     Returns:
         str: A JWT encoded access token
@@ -26,10 +36,12 @@ def create_access_token(
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 

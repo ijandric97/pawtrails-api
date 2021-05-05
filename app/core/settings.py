@@ -9,8 +9,9 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v0"  # This is the API prefix for version 0
 
     # JWT STUFF
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 1  # This means 1 day
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 1  # This means 1 day
+    JWT_SECRET_KEY: str = secrets.token_urlsafe(32)
 
     # SERVER_NAME: str
     # SERVER_HOST: AnyHttpUrl
