@@ -1,6 +1,6 @@
 # Pawtrails API Server
 
-This repository contains the code for the Pawtrails Web API Server. Currently only the Backend portion of the code is planned and available. The application is built in Python/FastAPI and connected to the PostgreSQL database.
+This repository contains the code for the Pawtrails Web API Server. Currently only the Backend portion of the code is planned and available. The application is built in Python/FastAPI and connected to the Neo4j Database.
 
 ## Local Start
 
@@ -18,7 +18,7 @@ $ python -m pip install --upgrade pip
 $ pip install -r requirements.txt
 ```
 
-> Before actually running the application *YOU* **SHOULD** edit the **.env** file so that it points to a valid PostgreSQL instance, or customize the application to use sqlite3 if you wish to do so.
+> Before actually running the application *YOU* **SHOULD** edit the **.env** file so that it points to a valid Neo4j instance.
 
 3. Run application using Uvicorn ASGI
 
@@ -44,16 +44,6 @@ $ docker volume prune -f
 >
 >If you also have other projects depending on docker, you will have to manually search for the containers, images and volumes using *docker image/container/volume ls* command and then manuall removing them with *docker image/container/volume rm ...* command.
 
-## pgAdmin
-
-The server is not automatically added. You will have to add the server using the info located in the **.env** file.
-> Default server host is not localhost but postgres
-
-You can view the admin panel at:
-```
-http://localhost:5050
-```
-
 ## View Docs
 
 To view the swagger generated docs visit:
@@ -66,38 +56,6 @@ If you want to see redoc for some reason, you can do it at:
 http://localhost:8000/redoc
 ```
 > If the links are not working, use 127.0.0.1 instead of localhost
-
-## Migrations
-
-We use Alembic for migrations.
-To create a new migration use the following command:
-```
-$ alembic revision -m "name of your revision"
-```
-
-To run migrations do the following:
-```
-$ alembic upgrade head
-```
-
-We can also migrate specific revisions, or relative migrations:
-```
-$ alembic upgrade hash_of_the_revision
-$ alembic upgrade +2
-```
-
-We can check the history of current or all migrations with:
-```
-$ alembic current
-$ alembic history --verbose
-```
-
-To revert migration we use the following (using head reverts everything):
-```
-$ alembic downgrade hash_of_the_revision
----
-$ alembic downgrade head
-```
 
 ## Workflow && Code-Style
 
