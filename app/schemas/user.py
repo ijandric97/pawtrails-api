@@ -10,7 +10,6 @@ class RegisterUserSchema(BaseModel):
     password: str
 
 
-# Additional properties to return via API
 class UserSchema(BaseModel):
     email: Optional[EmailStr]
     username: Optional[str]

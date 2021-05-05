@@ -1,4 +1,7 @@
-from typing import TypeVar
+from __future__ import annotations
+
+from datetime import datetime
+from typing import List, Optional
 
 import jsonpickle
 from neotime import DateTime
@@ -6,8 +9,6 @@ from py2neo import Graph  # noqa
 from py2neo.ogm import Model, Property, Repository
 
 from app.core.settings import settings
-
-ModelType = TypeVar("ModelType", bound=Model)
 
 graph = Repository(
     host=settings.NEO4J_HOST,
@@ -30,11 +31,10 @@ class BaseModel(Model):
     _created_at = Property(key="created_at")
     _updated_at = Property(key="updated_at", default=DateTime.utc_now())
 
-    def __init__(self: Model, **kwargs: dict) -> None:
+    def __init__(self, **kwargs: dict) -> None:
         """Initialize a Neo4J Model
 
         Args:
-            self (Model): Neo4j Model object
             kwargs (dict): A list of fields to initialize with
         """
         for key, value in kwargs.items():
@@ -42,17 +42,32 @@ class BaseModel(Model):
                 setattr(self, key, value)
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls) -> Optional[List[BaseModel]]:
+        """Returns all nodes of this Model from the database
+
+        Returns:
+            Optional[List[Model]]: List of Nodes with this Model type
+        """
         return cls.match(repository)
 
     @property
-    def created_at(self):
+    def created_at(self) -> Optional[datetime]:
+        """Returns the date and time when the Node was created
+
+        Returns:
+            Optional[datetime]: DateTime when the Node was created
+        """
         if self._created_at:
             return self._created_at.to_native()
         return None
 
     @property
-    def updated_at(self):
+    def updated_at(self) -> Optional[datetime]:
+        """Returns the last date and time the object was updated
+
+        Returns:
+            Optional[datetime]: DateTime of the last Node update
+        """
         if self._updated_at:
             return self._updated_at.to_native()
         return None
@@ -68,11 +83,8 @@ class BaseModel(Model):
         """Delete the Neo4j Model Object"""
         repository.delete(self)
 
-    def to_json(self: Model) -> str:
+    def to_json(self) -> str:
         """Returns a JSON representation of this object.
-
-        Args:
-            self (Model): Neo4j Model object
 
         Returns:
             str: JSON representation of this Neo4j Model
