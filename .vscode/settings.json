@@ -23,4 +23,5 @@
         "**/.mypy_cache": true,
         "**/venv": true,
     },
+    "python.pythonPath": "venv/bin/python",
 }

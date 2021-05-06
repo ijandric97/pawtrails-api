@@ -12,10 +12,11 @@ $ python3 -m venv venv
 $ source venv/bin/activate
 ```
 
-2. Update pip and install required packages
+2. Update pip, install poetry, install all packages
 ```
 $ python -m pip install --upgrade pip
-$ pip install -r requirements.txt
+$ pip install poetry
+$ poetry install
 ```
 
 > Before actually running the application *YOU* **SHOULD** edit the **.env** file so that it points to a valid Neo4j instance.
@@ -81,5 +82,7 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 
 ## TODO
 Investigate mypy and type-hints
-Sort out the pre-commit hook
-Create setup.py, should contain dependencies and dev-dependencies
+Poetry supports scripts... add them :)
+Hot-reloading docker somehow
+Local execution using VSCode does not work, investigate
+Investigate dockerignore
