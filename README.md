@@ -66,6 +66,20 @@ The allowed comment tags are the ones by Comment Anchors.
 ## File structure
 The routes are located in the API folder.
 
+## Pre-Commit hooks
+The pre-commit hooks will run isort, black, flake8 and mypy on the code.
+It will also run several other pre-commit hooks.
+To test if everything will pass without commiting use the following:
+```
+$  pre-commit run --all-files
+```
+To ignore the hooks and commit without them use:
+```
+$ git commit -m "Bypassing pre-commit hooks" --no-verify
+```
+> Please do not skip pre-commit hooks :)
+
 ## TODO
 Investigate mypy and type-hints
 Sort out the pre-commit hook
+Create setup.py, should contain dependencies and dev-dependencies

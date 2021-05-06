@@ -15,12 +15,12 @@ services:
       test: wget http://pawtrails_neo4j:7474/browser -O -
       interval: 1s
       timeout: 1s
-      retries: 25 
+      retries: 25
     ports:
         - 7474:7474
         - 7687:7687
     volumes:
-        - neo4j_data:/data
+        - neo4j_data:/var/lib/neo4j/data
     networks:
       - pawtrails
 
@@ -34,7 +34,7 @@ services:
       dockerfile: backend.dockerfile
     env_file: .env
     ports:
-      - "80:80"
+      - 80:80
     networks:
       - pawtrails
 
