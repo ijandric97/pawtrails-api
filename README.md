@@ -84,5 +84,3 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 Investigate mypy and type-hints
 Poetry supports scripts... add them :)
 Hot-reloading docker somehow
-Local execution using VSCode does not work, investigate
-Investigate dockerignore
