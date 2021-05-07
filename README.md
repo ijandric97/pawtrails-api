@@ -30,12 +30,15 @@ $ uvicorn app.main:app --reload
 
 ## Docker usage
 
-This is the recomended way to build the application.
+The workflow is centered around VSCode. First go into your terminal and start the debug compose file:
 
 ```
-$ docker-compose up --build
+$ docker-compose -f docker-compose.debug.yml up --build
 ```
+Wait for both Neo4j and Pawtrails_backend to finish initializing (It is when debugpy finishes installing); then go into VSCode and hit **F5** or **Run>Start Debugging**.
+> If it asks for the configuration select *"Python: Remote Attach to pawtrails_backend"*
 
+### Prune Docker
 If something went wrong, you can destroy everything using the following commands
 ```
 $ docker system prune -af
@@ -83,4 +86,6 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 ## TODO
 Investigate mypy and type-hints
 Poetry supports scripts... add them :)
-Hot-reloading docker somehow
+Write better documentation
+Pydantic config is connected to env
+Deploy to AWS

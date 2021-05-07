@@ -12,8 +12,8 @@ services:
       retries: 25
     ulimits:
       nofile:
-        soft: 4000
-        hard: 4000
+        soft: 40000
+        hard: 40000
     ports:
       - 7474:7474
       - 7687:7687
