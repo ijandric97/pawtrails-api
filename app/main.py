@@ -6,9 +6,9 @@ from app.api.v0.api import api_router
 from app.core.settings import settings
 
 app = FastAPI(
-    title="PawTrails",
-    description="A Web API for the PawTrails Application",
-    version="1.0.0",
+    title=settings.APP_TITLE,
+    description=settings.APP_DESCRIPTION,
+    version=settings.APP_DESCRIPTION,
     openapi_url=f"{settings.API_PREFIX}/openapi.json",
 )
 
