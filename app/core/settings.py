@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # Neo4j
     NEO4J_HOST: str = "pawtrails_neo4j"
     NEO4J_USER: str = "neo4j"
-    NEO4J_PASSWORD: str = "test"
+    NEO4J_PASS: str = "test"
     NEO4J_GRAPH_NAME: str = "pawtrails"
 
     # SERVER_NAME: str

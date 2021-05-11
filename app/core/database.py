@@ -12,13 +12,13 @@ from app.core.settings import settings
 
 graph = Repository(
     host=settings.NEO4J_HOST,
-    auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+    auth=(settings.NEO4J_USER, settings.NEO4J_PASS),
     name=settings.NEO4J_GRAPH_NAME,
 )
 
 repository = Repository(
     host=settings.NEO4J_HOST,
-    auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+    auth=(settings.NEO4J_USER, settings.NEO4J_PASS),
     name=settings.NEO4J_GRAPH_NAME,
 )
 
