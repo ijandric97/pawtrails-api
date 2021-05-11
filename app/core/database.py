@@ -42,13 +42,13 @@ class BaseModel(Model):
                 setattr(self, key, value)
 
     @classmethod
-    def get_all(cls) -> Optional[List[BaseModel]]:
+    def get_all(cls, skip: int = 0, limit: int = 100) -> List[BaseModel]:
         """Returns all nodes of this Model from the database
 
         Returns:
             Optional[List[Model]]: List of Nodes with this Model type
         """
-        return cls.match(repository)
+        return cls.match(repository).skip(skip).limit(limit).all()
 
     @property
     def created_at(self) -> Optional[datetime]:

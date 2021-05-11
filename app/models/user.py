@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
-from py2neo.ogm import Property
+from neotime import DateTime
+from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as BaseSchema
 from pydantic import EmailStr
 
@@ -18,7 +19,13 @@ class User(BaseModel):
     _username = Property(key="username")
     _password = Property(key="password")
 
+    # TODO: Actually set this to false until user activates with mail
+    # TODO: email on registering, use AWS for that
     is_active = Property(key="is_active", default=True)
+
+    # TODO: Finish follow relationship
+    _following = RelatedTo("User", "FOLLOW")
+    _followers = RelatedFrom("User", "FOLLOW")
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
@@ -61,6 +68,44 @@ class User(BaseModel):
     def password(self, password: str) -> None:
         self._password = get_password_hash(password)
 
+    @property
+    def following(self) -> List[User]:
+        ret: List[User] = []
+
+        for follow in self._following:
+            ret.append(follow)
+
+        return ret
+
+    @property
+    def followers(self) -> List[User]:
+        ret: List[User] = []
+
+        for follow in self._followers:
+            ret.append(follow)
+
+        return ret
+
+    def follow(self, user: User) -> bool:
+        # We tried to follow ourself or someone we are already following
+        if self == user or user in self._following:
+            return False
+
+        self._following.add(user, created_at=DateTime.utc_now())
+        self.save()
+
+        return True
+
+    def unfollow(self, user: User) -> bool:
+        # We tried to unfollow ourself or someone we are not even following
+        if self == user or user not in self._following:
+            return False
+
+        self._following.remove(user)
+        self.save()
+
+        return True
+
 
 class UserSchema(BaseSchema):
     email: Optional[EmailStr]
@@ -77,3 +122,10 @@ class RegisterUserSchema(BaseSchema):
     email: EmailStr
     username: str
     password: str
+
+
+class UserNameSchema(BaseSchema):
+    username: Optional[str]
+
+    class Config:
+        orm_mode = True

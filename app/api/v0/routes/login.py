@@ -4,7 +4,6 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.deps import get_current_active_user
 from app.core.security import Token, create_access_token
 from app.core.settings import settings
 from app.models.user import RegisterUserSchema, User, UserSchema
@@ -51,8 +50,3 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
         ),
         "token_type": "bearer",
     }
-
-
-@router.post("/test", response_model=UserSchema)
-async def test(current_user: User = Depends(get_current_active_user)) -> Any:
-    return current_user

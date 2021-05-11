@@ -84,8 +84,7 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 > Please do not skip pre-commit hooks :)
 
 ## TODO
-Investigate mypy and type-hints
 Poetry supports scripts... add them :)
 Write better documentation
-Pydantic config is connected to env
-Deploy to AWS
+Connect ECS deployment to CodePipeline
+Following system should probably use usernames and not e-mails, Therefore usernames should not be changeable
