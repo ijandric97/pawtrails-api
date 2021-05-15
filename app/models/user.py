@@ -5,10 +5,11 @@ from typing import List, Optional
 
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
-from pydantic import BaseModel as BaseSchema
+from pydantic import BaseModel as Schema
 from pydantic import EmailStr
+from pydantic.fields import Field
 
-from app.core.database import BaseModel, repository
+from app.core.database import BaseModel, BaseSchema, repository
 from app.core.security import get_password_hash, verify_password
 
 
@@ -18,12 +19,10 @@ class User(BaseModel):
     _email = Property(key="email")
     _username = Property(key="username")
     _password = Property(key="password")
-
+    is_active = Property(key="is_active", default=True)
     # TODO: Actually set this to false until user activates with mail
     # TODO: email on registering, use AWS for that
-    is_active = Property(key="is_active", default=True)
 
-    # TODO: Finish follow relationship
     _following = RelatedTo("User", "FOLLOW")
     _followers = RelatedFrom("User", "FOLLOW")
 
@@ -50,7 +49,8 @@ class User(BaseModel):
 
     @email.setter
     def email(self, email: str) -> None:
-        self._email = email
+        if not User.get_by_email(email):
+            self._email = email
 
     @property
     def username(self) -> str:
@@ -108,24 +108,17 @@ class User(BaseModel):
 
 
 class UserSchema(BaseSchema):
-    email: Optional[EmailStr]
     username: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     is_active: Optional[bool] = True
 
-    class Config:
-        orm_mode = True
+
+class UserFullSchema(UserSchema):
+    email: Optional[EmailStr]
 
 
-class RegisterUserSchema(BaseSchema):
-    email: EmailStr
-    username: str
-    password: str
-
-
-class UserNameSchema(BaseSchema):
-    username: Optional[str]
-
-    class Config:
-        orm_mode = True
+class RegisterUserSchema(Schema):
+    email: EmailStr = Field(example="user@example.com")
+    username: str = Field(example="user")
+    password: str = Field(example="password")
