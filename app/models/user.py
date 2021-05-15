@@ -27,6 +27,15 @@ class User(BaseModel):
     _followers = RelatedFrom("User", "FOLLOW")
 
     @classmethod
+    def get_all(cls, skip: int, limit: int) -> List[User]:  # type: ignore
+        ret: List[User] = []
+
+        for user in super().get_all(skip=skip, limit=limit):
+            ret.append(user)
+
+        return ret
+
+    @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
         return cls.match(repository, email).first()
 
@@ -37,9 +46,7 @@ class User(BaseModel):
     @classmethod
     def authenticate(cls, email: str, password: str) -> Optional[User]:
         user = cls.get_by_email(email=email)
-        if not user:
-            return None
-        if not verify_password(password, user.password):
+        if not user or not verify_password(password, user.password):
             return None
         return user
 
@@ -49,8 +56,11 @@ class User(BaseModel):
 
     @email.setter
     def email(self, email: str) -> None:
-        if not User.get_by_email(email):
-            self._email = email
+        if not isinstance(email, str):
+            raise TypeError(f"{email} is not an email.")
+        if User.get_by_email(email):
+            raise ValueError(f"{email} already exists.")
+        self._email = email
 
     @property
     def username(self) -> str:
@@ -58,6 +68,10 @@ class User(BaseModel):
 
     @username.setter
     def username(self, username: str) -> None:
+        if not isinstance(username, str):
+            raise TypeError(f"{username} is not a string.")
+        if User.get_by_username(username):
+            raise ValueError(f"{username} already exists.")
         self._username = username
 
     @property
@@ -66,6 +80,8 @@ class User(BaseModel):
 
     @password.setter
     def password(self, password: str) -> None:
+        if not isinstance(password, str):
+            raise TypeError(f"{password} is not a string.")
         self._password = get_password_hash(password)
 
     @property
@@ -87,17 +103,15 @@ class User(BaseModel):
         return ret
 
     def follow(self, user: User) -> bool:
-        # We tried to follow ourself or someone we are already following
         if self == user or user in self._following:
             return False
 
         self._following.add(user, created_at=DateTime.utc_now())
-        self.save()
+        self.save()  # NOTE: Saving is fine in methods, but not in properties
 
         return True
 
     def unfollow(self, user: User) -> bool:
-        # We tried to unfollow ourself or someone we are not even following
         if self == user or user not in self._following:
             return False
 

@@ -4,7 +4,6 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.deps import get_current_user
 from app.core.security import Token, create_access_token
 from app.core.settings import settings
 from app.models.user import RegisterUserSchema, User, UserFullSchema
@@ -53,30 +52,3 @@ async def register(*, user_in: RegisterUserSchema) -> User:
     # TODO: Add email
 
     return user
-
-
-@router.put("/password", response_model=UserFullSchema)
-async def change_password(
-    password: str, current_user: User = Depends(get_current_user)
-) -> User:
-    """Change your current password with something new."""
-    current_user.password = password
-    current_user.save()
-    return current_user
-
-
-@router.put("/email", response_model=UserFullSchema)
-async def change_email(
-    email: str, current_user: User = Depends(get_current_user)
-) -> User:
-    """Change your email provided it is still unique."""
-    user = User.get_by_email(email)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="The user with this email already exists in our system.",
-        )
-
-    current_user.email = email
-    current_user.save()
-    return current_user
