@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 from pydantic.networks import EmailStr
 
 from app.api.deps import get_current_active_user, get_current_user
+from app.models.pet import Pet, PetSchema
 from app.models.user import User, UserFullSchema, UserSchema
 
 router = APIRouter()
@@ -163,3 +164,20 @@ async def get_following_by_uuid(uuid: str) -> List[User]:
         )
 
     return user.following
+
+
+@router.get("/pets", response_model=List[PetSchema])
+async def get_pets(current_user: User = Depends(get_current_user)) -> List[Pet]:
+    return current_user.pets
+
+
+@router.get("/pets/{uuid}", response_model=List[PetSchema])
+async def get_pets_by_uuid(uuid: str) -> List[Pet]:
+    user = User.get_by_uuid(uuid)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with uuid {uuid} does not exist",
+        )
+
+    return user.pets

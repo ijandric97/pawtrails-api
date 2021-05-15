@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from app.models.pet import Pet
 
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
@@ -16,24 +19,21 @@ from app.core.security import get_password_hash, verify_password
 class User(BaseModel):
     __primarykey__ = "email"
 
+    # TODO: Actually set this to false until user activates with mail
+    # TODO: email on registering, use AWS for that
+    is_active = Property(key="is_active", default=True)
     _email = Property(key="email")
     _username = Property(key="username")
     _password = Property(key="password")
-    is_active = Property(key="is_active", default=True)
-    # TODO: Actually set this to false until user activates with mail
-    # TODO: email on registering, use AWS for that
 
-    _following = RelatedTo("User", "FOLLOW")
-    _followers = RelatedFrom("User", "FOLLOW")
+    _following = RelatedTo("User", "FOLLOWS")
+    _followers = RelatedFrom("User", "FOLLOWS")
+    # NOTE: Import this whole things so there is not CIRCULAR IMPORTS
+    _pets = RelatedTo("app.models.pet.Pet", "OWNS")
 
     @classmethod
     def get_all(cls, skip: int, limit: int) -> List[User]:  # type: ignore
-        ret: List[User] = []
-
-        for user in super().get_all(skip=skip, limit=limit):
-            ret.append(user)
-
-        return ret
+        return [user for user in super().get_all(skip=skip, limit=limit)]
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
@@ -57,9 +57,9 @@ class User(BaseModel):
     @email.setter
     def email(self, email: str) -> None:
         if not isinstance(email, str):
-            raise TypeError(f"{email} is not an email.")
+            raise TypeError(f"Email {email} is not an email.")
         if User.get_by_email(email):
-            raise ValueError(f"{email} already exists.")
+            raise ValueError(f"Email {email} already exists.")
         self._email = email
 
     @property
@@ -69,9 +69,9 @@ class User(BaseModel):
     @username.setter
     def username(self, username: str) -> None:
         if not isinstance(username, str):
-            raise TypeError(f"{username} is not a string.")
+            raise TypeError(f"Username {username} is not a string.")
         if User.get_by_username(username):
-            raise ValueError(f"{username} already exists.")
+            raise ValueError(f"Username {username} already exists.")
         self._username = username
 
     @property
@@ -81,26 +81,20 @@ class User(BaseModel):
     @password.setter
     def password(self, password: str) -> None:
         if not isinstance(password, str):
-            raise TypeError(f"{password} is not a string.")
+            raise TypeError(f"Password {password} is not a string.")
         self._password = get_password_hash(password)
 
     @property
     def following(self) -> List[User]:
-        ret: List[User] = []
-
-        for follow in self._following:
-            ret.append(follow)
-
-        return ret
+        return [follow for follow in self._following]
 
     @property
     def followers(self) -> List[User]:
-        ret: List[User] = []
+        return [follow for follow in self._followers]
 
-        for follow in self._followers:
-            ret.append(follow)
-
-        return ret
+    @property
+    def pets(self) -> List[Pet]:
+        return [pet for pet in self._pets]
 
     def follow(self, user: User) -> bool:
         if self == user or user in self._following:
