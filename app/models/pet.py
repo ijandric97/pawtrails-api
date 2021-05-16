@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Literal
 
 from neotime import DateTime
+from py2neo.ogm import Property, RelatedFrom
+from pydantic import BaseModel as Schema
+
+from app.core.database import BaseModel, BaseSchema
 
 if TYPE_CHECKING:
     from app.models.user import User
-
-from py2neo.ogm import Property, RelatedFrom
-
-from app.core.database import BaseModel, BaseSchema
 
 energy: List[int] = [1, 2, 3, 4, 5]
 
@@ -76,3 +76,15 @@ class PetSchema(BaseSchema):
     breed: str
     energy: Literal[1, 2, 3, 4, 5]
     size: Literal["Small", "Medium", "Big"]
+
+
+class AddPetSchema(Schema):
+    name: str
+    breed: str
+    energy: Literal[1, 2, 3, 4, 5]
+    size: Literal["Small", "Medium", "Big"]
+
+
+class Adder:
+    pet_uuid: str
+    user_uuid: str

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
@@ -22,7 +22,7 @@ async def delete_user(current_user: User = Depends(get_current_user)) -> None:
 
 
 @router.get("/list", response_model=List[UserSchema])
-async def get_user_list(skip: int = 0, limit: int = 100) -> Optional[List[User]]:
+async def get_user_list(skip: int = 0, limit: int = 100) -> List[User]:
     return User.get_all(skip, limit)
 
 
@@ -94,12 +94,7 @@ async def change_password(
 async def follow_user(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> User:
-    user = User.get_by_uuid(uuid)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with uuid {uuid} does not exist.",
-        )
+    user = await get_user_by_uuid(uuid)
     if not current_user.follow(user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -113,12 +108,7 @@ async def follow_user(
 async def unfollow_user(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> None:
-    user = User.get_by_uuid(uuid)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with uuid {uuid} does not exist.",
-        )
+    user = await get_user_by_uuid(uuid)
     if not current_user.unfollow(user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -137,13 +127,7 @@ async def get_followers(
 
 @router.get("/followers/{uuid}", response_model=List[UserSchema])
 async def get_followers_by_uuid(uuid: str) -> List[User]:
-    user = User.get_by_uuid(uuid)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with uuid {uuid} does not exist",
-        )
-
+    user = await get_user_by_uuid(uuid)
     return user.followers
 
 
@@ -156,13 +140,7 @@ async def get_following(
 
 @router.get("/following/{uuid}", response_model=List[UserSchema])
 async def get_following_by_uuid(uuid: str) -> List[User]:
-    user = User.get_by_uuid(uuid)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with uuid {uuid} does not exist",
-        )
-
+    user = await get_user_by_uuid(uuid)
     return user.following
 
 
@@ -173,11 +151,5 @@ async def get_pets(current_user: User = Depends(get_current_user)) -> List[Pet]:
 
 @router.get("/pets/{uuid}", response_model=List[PetSchema])
 async def get_pets_by_uuid(uuid: str) -> List[Pet]:
-    user = User.get_by_uuid(uuid)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with uuid {uuid} does not exist",
-        )
-
+    user = await get_user_by_uuid(uuid)  # NOTE: coroutines have to be awaited
     return user.pets

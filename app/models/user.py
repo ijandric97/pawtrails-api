@@ -3,9 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-if TYPE_CHECKING:
-    from app.models.pet import Pet
-
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
@@ -14,6 +11,9 @@ from pydantic.fields import Field
 
 from app.core.database import BaseModel, BaseSchema, repository
 from app.core.security import get_password_hash, verify_password
+
+if TYPE_CHECKING:
+    from app.models.pet import Pet
 
 
 class User(BaseModel):
@@ -30,10 +30,6 @@ class User(BaseModel):
     _followers = RelatedFrom("User", "FOLLOWS")
     # NOTE: Import this whole things so there is not CIRCULAR IMPORTS
     _pets = RelatedTo("app.models.pet.Pet", "OWNS")
-
-    @classmethod
-    def get_all(cls, skip: int, limit: int) -> List[User]:  # type: ignore
-        return [user for user in super().get_all(skip=skip, limit=limit)]
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:

@@ -65,7 +65,7 @@ class BaseModel(Model):
         Returns:
             Optional[List[Model]]: List of Nodes with this Model type
         """
-        return cls.match(repository).skip(skip).limit(limit).all()
+        return [model for model in cls.match(repository).skip(skip).limit(limit).all()]
 
     @property
     def uuid(self) -> Optional[str]:
