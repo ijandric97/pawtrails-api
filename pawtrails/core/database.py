@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import uuid4
 
 import jsonpickle
@@ -12,9 +12,9 @@ from pydantic import UUID4
 from pydantic import BaseModel as Schema
 from pydantic import Field
 
-from app.core.settings import settings
+from pawtrails.core.settings import settings
 
-graph = Repository(
+graph = Graph(
     host=settings.NEO4J_HOST,
     auth=(settings.NEO4J_USER, settings.NEO4J_PASS),
     name=settings.NEO4J_GRAPH_NAME,
@@ -36,7 +36,7 @@ class BaseModel(Model):
     _created_at = Property(key="created_at")
     _updated_at = Property(key="updated_at", default=DateTime.utc_now())
 
-    def __init__(self, **kwargs: dict) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize a Neo4J Model
 
         Args:
@@ -96,7 +96,7 @@ class BaseModel(Model):
             return self._updated_at.to_native()
         return None
 
-    def update(self, **kwargs: dict) -> None:
+    def update(self, **kwargs: Any) -> None:
         """Updates a Neo4J Model with specified dict
 
         Args:

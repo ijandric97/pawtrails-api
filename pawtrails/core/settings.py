@@ -1,10 +1,10 @@
 import secrets
 from typing import List, Union
 
+from dotenv import load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 
-# TODO: Connect this with .env file, check Pydantic documentation
 class Settings(BaseSettings):
     # Project RELATED
     APP_TITLE: str = "PawTrails"
@@ -43,4 +43,5 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+load_dotenv(".env")
 settings = Settings()

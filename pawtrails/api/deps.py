@@ -3,9 +3,9 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import ValidationError
 
-from app.core.security import TokenData
-from app.core.settings import settings
-from app.models.user import User
+from pawtrails.core.security import TokenData
+from pawtrails.core.settings import settings
+from pawtrails.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/login")
 

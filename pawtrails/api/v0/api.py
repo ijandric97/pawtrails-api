@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v0.routes import location, login, pet, user
+from pawtrails.api.v0.routes import location, login, pet, user
 
 api_router = APIRouter()
 api_router.include_router(login.router, tags=["login"])

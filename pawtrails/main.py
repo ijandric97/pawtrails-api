@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v0.api import api_router
-from app.core.settings import settings
+from pawtrails.api.v0.api import api_router
+from pawtrails.core.settings import settings
 
 app = FastAPI(
     title=settings.APP_TITLE,

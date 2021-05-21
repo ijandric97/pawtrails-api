@@ -8,10 +8,10 @@ from pydantic import BaseModel as Schema
 from pydantic import Field
 from typing_extensions import Annotated
 
-from app.core.database import BaseModel, BaseSchema
+from pawtrails.core.database import BaseModel, BaseSchema
 
 if TYPE_CHECKING:
-    from app.models.user import User
+    from pawtrails.models.user import User
 
 energy: List[int] = [1, 2, 3, 4, 5]
 
@@ -24,7 +24,7 @@ class Pet(BaseModel):
     _energy = Property(key="energy", default=3)
     _size = Property(key="size", default="Medium")
 
-    _owners = RelatedFrom("app.models.user.User", "OWNS")
+    _owners = RelatedFrom("pawtrails.models.user.User", "OWNS")
 
     @property
     def energy(self) -> Literal[1, 2, 3, 4, 5]:

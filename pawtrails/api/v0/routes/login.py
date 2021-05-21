@@ -4,9 +4,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.core.security import Token, create_access_token
-from app.core.settings import settings
-from app.models.user import RegisterUserSchema, User, UserFullSchema
+from pawtrails.core.security import Token, create_access_token
+from pawtrails.core.settings import settings
+from pawtrails.models.user import RegisterUserSchema, User, UserFullSchema
 
 router = APIRouter()
 

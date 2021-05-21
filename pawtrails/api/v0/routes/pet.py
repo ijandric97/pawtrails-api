@@ -3,10 +3,10 @@ from typing import List, cast
 from fastapi import APIRouter, HTTPException, status
 from fastapi.param_functions import Depends
 
-from app.api.deps import get_current_active_user
-from app.api.v0.routes.user import get_user_by_uuid
-from app.models.pet import AddPetSchema, Pet, PetSchema, UpdatePetSchema
-from app.models.user import User, UserSchema
+from pawtrails.api.deps import get_current_active_user
+from pawtrails.api.v0.routes.user import get_user_by_uuid
+from pawtrails.models.pet import AddPetSchema, Pet, PetSchema, UpdatePetSchema
+from pawtrails.models.user import User, UserSchema
 
 router = APIRouter()
 

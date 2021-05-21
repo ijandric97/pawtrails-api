@@ -10,11 +10,11 @@ from pydantic import EmailStr
 from pydantic.fields import Field
 from typing_extensions import Annotated
 
-from app.core.database import BaseModel, BaseSchema, repository
-from app.core.security import get_password_hash, verify_password
+from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.core.security import get_password_hash, verify_password
 
 if TYPE_CHECKING:
-    from app.models.pet import Pet
+    from pawtrails.models.pet import Pet
 
 
 class User(BaseModel):
@@ -30,7 +30,7 @@ class User(BaseModel):
     _following = RelatedTo("User", "FOLLOWS")
     _followers = RelatedFrom("User", "FOLLOWS")
     # NOTE: Import this whole things so there is not CIRCULAR IMPORTS
-    _pets = RelatedTo("app.models.pet.Pet", "OWNS")
+    _pets = RelatedTo("pawtrails.models.pet.Pet", "OWNS")
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:

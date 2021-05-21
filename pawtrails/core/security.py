@@ -5,7 +5,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel as Schema
 
-from app.core.settings import settings
+from pawtrails.core.settings import settings
 
 
 class Token(Schema):

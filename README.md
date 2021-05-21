@@ -24,7 +24,7 @@ $ poetry install
 3. Run application using Uvicorn ASGI
 
 ```
-$ uvicorn app.main:app --reload
+$ uvicorn pawtrails.main:app --reload
 ```
 > If you are using WSL2 please ensure that you have localhostForwarding=true in your .wslconfig file. If uvicorn still does not start, restart the WSL2.
 
