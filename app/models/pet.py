@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, List, Literal, Optional
 
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom
 from pydantic import BaseModel as Schema
+from pydantic import Field
+from typing_extensions import Annotated
 
 from app.core.database import BaseModel, BaseSchema
 
@@ -79,10 +81,17 @@ class PetSchema(BaseSchema):
 
 
 class AddPetSchema(Schema):
-    name: str
-    breed: str
+    name: Annotated[str, Field(example="Doge", min_length=1)]
+    breed: Annotated[str, Field(example="Shiba Inu", min_length=1)]
     energy: Literal[1, 2, 3, 4, 5]
     size: Literal["Small", "Medium", "Big"]
+
+
+class UpdatePetSchema(Schema):
+    name: Annotated[Optional[str], Field(example="Doge", min_length=1)]
+    breed: Annotated[Optional[str], Field(example="Shiba Inu", min_length=1)]
+    energy: Optional[Literal[1, 2, 3, 4, 5]]
+    size: Optional[Literal["Small", "Medium", "Big"]]
 
 
 class Adder:

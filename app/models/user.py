@@ -8,6 +8,7 @@ from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 from pydantic import EmailStr
 from pydantic.fields import Field
+from typing_extensions import Annotated
 
 from app.core.database import BaseModel, BaseSchema, repository
 from app.core.security import get_password_hash, verify_password
@@ -120,9 +121,17 @@ class UserSchema(BaseSchema):
 
 class UserFullSchema(UserSchema):
     email: Optional[EmailStr]
+    # following: Optional[List[UserSchema]]
+    # pets: Optional[List[PetSchema]]
 
 
 class RegisterUserSchema(Schema):
     email: EmailStr = Field(example="user@example.com")
-    username: str = Field(example="user")
-    password: str = Field(example="password")
+    username: Annotated[str, Field(example="user", min_length=3)]
+    password: Annotated[str, Field(example="password", min_length=8)]
+
+
+class UpdateUserSchema(Schema):
+    email: Optional[EmailStr] = Field(example="user@example.com")
+    username: Annotated[Optional[str], Field(example="user", min_length=3)]
+    password: Annotated[Optional[str], Field(example="password", min_length=8)]

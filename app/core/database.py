@@ -42,9 +42,7 @@ class BaseModel(Model):
         Args:
             kwargs (dict): A list of fields to initialize with
         """
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+        self.update(**kwargs)
 
     @classmethod
     def get_by_uuid(cls, uuid: str) -> BaseModel:
@@ -97,6 +95,16 @@ class BaseModel(Model):
         if self._updated_at:
             return self._updated_at.to_native()
         return None
+
+    def update(self, **kwargs: dict) -> None:
+        """Updates a Neo4J Model with specified dict
+
+        Args:
+            kwargs (dict): A list of fields to update with
+        """
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def save(self) -> None:
         """Save the Neo4j Model Object"""
