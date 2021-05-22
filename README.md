@@ -86,3 +86,4 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 ## TODO
 Write better documentation
 Connect ECS deployment to CodePipeline
+OGM contains nothing to mark field as required... investigate

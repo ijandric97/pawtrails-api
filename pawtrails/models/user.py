@@ -18,8 +18,6 @@ if TYPE_CHECKING:
 
 
 class User(BaseModel):
-    __primarykey__ = "email"
-
     # TODO: Actually set this to false until user activates with mail
     # TODO: email on registering, use AWS for that
     is_active = Property(key="is_active", default=True)

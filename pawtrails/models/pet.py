@@ -9,16 +9,16 @@ from pydantic import Field
 from typing_extensions import Annotated
 
 from pawtrails.core.database import BaseModel, BaseSchema
+from pawtrails.utils import is_allowed_literal
 
 if TYPE_CHECKING:
     from pawtrails.models.user import User
 
-energy: List[int] = [1, 2, 3, 4, 5]
+AllowedPetEnergies = Literal[1, 2, 3, 4, 5]
+AllowedPetSizes = Literal["small", "medium", "big"]
 
 
 class Pet(BaseModel):
-    __primarykey__ = "uuid"
-
     name = Property(key="name")
     breed = Property(key="breed")
     _energy = Property(key="energy", default=3)
@@ -27,27 +27,29 @@ class Pet(BaseModel):
     _owners = RelatedFrom("pawtrails.models.user.User", "OWNS")
 
     @property
-    def energy(self) -> Literal[1, 2, 3, 4, 5]:
+    def energy(self) -> AllowedPetEnergies:
         return self._energy
 
     @energy.setter
     def energy(self, energy: int) -> None:
         if not isinstance(energy, int):
             raise TypeError(f"Energy {energy} is not an integer.")
-        if energy not in [1, 2, 3, 4, 5]:
-            raise ValueError(f"Energy {energy} is not on scale [1-5].")
+
+        is_allowed_literal(energy, "Energy", AllowedPetEnergies)
+
         self._energy = energy
 
     @property
-    def size(self) -> Literal["Small", "Medium", "Big"]:
+    def size(self) -> AllowedPetSizes:
         return self._size
 
     @size.setter
     def size(self, size: str) -> None:
         if not isinstance(size, str):
             raise TypeError(f"Size {size} is not a string.")
-        if size not in ["Small", "Medium", "Big"]:
-            raise ValueError(f"Size {size} is not one of 'Small', 'Medium' or 'Big'")
+
+        is_allowed_literal(size, "Size", AllowedPetSizes)
+
         self._size = size
 
     @property
@@ -76,22 +78,22 @@ class Pet(BaseModel):
 class PetSchema(BaseSchema):
     name: str
     breed: str
-    energy: Literal[1, 2, 3, 4, 5]
-    size: Literal["Small", "Medium", "Big"]
+    energy: AllowedPetEnergies
+    size: AllowedPetSizes
 
 
 class AddPetSchema(Schema):
     name: Annotated[str, Field(example="Doge", min_length=1)]
     breed: Annotated[str, Field(example="Shiba Inu", min_length=1)]
-    energy: Literal[1, 2, 3, 4, 5]
-    size: Literal["Small", "Medium", "Big"]
+    energy: AllowedPetEnergies
+    size: AllowedPetSizes
 
 
 class UpdatePetSchema(Schema):
     name: Annotated[Optional[str], Field(example="Doge", min_length=1)]
     breed: Annotated[Optional[str], Field(example="Shiba Inu", min_length=1)]
-    energy: Optional[Literal[1, 2, 3, 4, 5]]
-    size: Optional[Literal["Small", "Medium", "Big"]]
+    energy: Optional[AllowedPetEnergies]
+    size: Optional[AllowedPetSizes]
 
 
 class Adder:

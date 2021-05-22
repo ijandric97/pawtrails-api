@@ -26,7 +26,7 @@ app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
 @app.get("/healthcheck", status_code=200)
-def hello() -> None:
+async def healthcheck() -> None:
     return
 
 

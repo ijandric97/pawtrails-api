@@ -32,6 +32,8 @@ class BaseModel(Model):
     methods. Additionaly contains automatic created and updated timestamp on save.
     """
 
+    __primarykey__ = "uuid"
+
     _uuid = Property(key="uuid")
     _created_at = Property(key="created_at")
     _updated_at = Property(key="updated_at", default=DateTime.utc_now())
