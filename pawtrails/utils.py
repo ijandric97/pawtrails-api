@@ -1,4 +1,4 @@
-from typing import Any, get_args
+from typing import Any, Callable, get_args
 
 
 def is_allowed_literal(var: Any, var_name: str, literals: object) -> None:
@@ -16,3 +16,8 @@ def is_allowed_literal(var: Any, var_name: str, literals: object) -> None:
     AllowedLiterals = list(get_args(literals))
     if var not in AllowedLiterals:
         raise ValueError(f"{var_name} {var} is not one of {AllowedLiterals}.")
+
+
+def override(f: Callable) -> Callable:
+    """A Java-like decorator that serves as an Annotation for overriden function"""
+    return f

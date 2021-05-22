@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import jsonpickle
 from neotime import DateTime
-from py2neo import Graph  # noqa
+from py2neo import Graph
 from py2neo.ogm import Model, Property, Repository
 from pydantic import UUID4
 from pydantic import BaseModel as Schema

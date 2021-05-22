@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, List, Literal, Optional
 
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
+from pydantic import BaseModel as Schema
 
-from pawtrails.core.database import BaseModel, BaseSchema
-from pawtrails.utils import is_allowed_literal
+from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
     from pawtrails.models.location import Location
@@ -20,6 +21,19 @@ class Review(BaseModel):
 
     _writer = RelatedFrom("pawtrails.models.user.User", "WROTE")
     _location = RelatedTo("pawtrails.models.location.Location", "FOR")
+
+    @classmethod
+    def get_by_grade(
+        cls, grade: AllowedReviewGrades, skip: int = 0, limit: int = 100
+    ) -> List[Review]:
+        return [
+            review
+            for review in cls.match(repository)
+            .where(grade=grade)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
 
     @property
     def grade(self) -> AllowedReviewGrades:
@@ -36,10 +50,6 @@ class Review(BaseModel):
     def writer(self) -> User:
         return self._writer
 
-    @property
-    def location(self) -> Location:
-        return self._location
-
     def add_writer(self, user: User) -> bool:
         if self._writer:
             return False
@@ -51,6 +61,10 @@ class Review(BaseModel):
             return False
         self._writer.remove(user)
         return True
+
+    @property
+    def location(self) -> Location:
+        return self._location
 
     def add_location(self, location: Location) -> bool:
         if self._location:
@@ -64,6 +78,7 @@ class Review(BaseModel):
         self._location.remove(location)
         return True
 
+    @override
     def save(self) -> None:
         if not self._writer:
             raise AttributeError("Cannot save Review: writer not defined.")
@@ -77,4 +92,18 @@ class Review(BaseModel):
 
 
 class ReviewSchema(BaseSchema):
-    pass
+    comment: str
+    grade: AllowedReviewGrades
+
+
+# TODO: Full schema, with user and location schema included
+
+
+class AddReviewSchema(Schema):
+    comment: str
+    grade: AllowedReviewGrades
+
+
+class UpdateReviewSchema(Schema):
+    comment: Optional[str]
+    grade: Optional[AllowedReviewGrades]

@@ -8,8 +8,8 @@ from pydantic import BaseModel as Schema
 from pydantic import Field
 from typing_extensions import Annotated
 
-from pawtrails.core.database import BaseModel, BaseSchema
-from pawtrails.utils import is_allowed_literal
+from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
     from pawtrails.models.user import User
@@ -26,6 +26,54 @@ class Pet(BaseModel):
 
     _owners = RelatedFrom("pawtrails.models.user.User", "OWNS")
 
+    @classmethod
+    def get_by_name(cls, name: str, skip: int = 0, limit: int = 100) -> List[Pet]:
+        return [
+            pet
+            for pet in cls.match(repository)
+            .where(name=name)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
+
+    @classmethod
+    def get_by_breed(cls, breed: str, skip: int = 0, limit: int = 100) -> List[Pet]:
+        return [
+            pet
+            for pet in cls.match(repository)
+            .where(breed=breed)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
+
+    @classmethod
+    def get_by_energy(
+        cls, energy: AllowedPetEnergies, skip: int = 0, limit: int = 100
+    ) -> List[Pet]:
+        return [
+            pet
+            for pet in cls.match(repository)
+            .where(energy=energy)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
+
+    @classmethod
+    def get_by_size(
+        cls, size: AllowedPetSizes, skip: int = 0, limit: int = 100
+    ) -> List[Pet]:
+        return [
+            pet
+            for pet in cls.match(repository)
+            .where(size=size)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
+
     @property
     def energy(self) -> AllowedPetEnergies:
         return self._energy
@@ -34,9 +82,7 @@ class Pet(BaseModel):
     def energy(self, energy: int) -> None:
         if not isinstance(energy, int):
             raise TypeError(f"Energy {energy} is not an integer.")
-
         is_allowed_literal(energy, "Energy", AllowedPetEnergies)
-
         self._energy = energy
 
     @property
@@ -47,9 +93,7 @@ class Pet(BaseModel):
     def size(self, size: str) -> None:
         if not isinstance(size, str):
             raise TypeError(f"Size {size} is not a string.")
-
         is_allowed_literal(size, "Size", AllowedPetSizes)
-
         self._size = size
 
     @property
@@ -59,20 +103,20 @@ class Pet(BaseModel):
     def add_owner(self, user: User) -> bool:
         if user in self._owners:
             return False
-
         self._owners.add(user, created_at=DateTime.utc_now())
-        self.save()
-
         return True
 
     def remove_owner(self, user: User) -> bool:
         if user not in self._owners:
             return False
-
         self._owners.remove(user)
-        self.save()
-
         return True
+
+    @override
+    def save(self) -> None:
+        if not self._owners:
+            raise AttributeError("Cannot save Pet: at least 1 owner is not defined.")
+        super().save()
 
 
 class PetSchema(BaseSchema):
@@ -80,6 +124,9 @@ class PetSchema(BaseSchema):
     breed: str
     energy: AllowedPetEnergies
     size: AllowedPetSizes
+
+
+# TODO: Full pet schema, including owners :)
 
 
 class AddPetSchema(Schema):
@@ -96,6 +143,4 @@ class UpdatePetSchema(Schema):
     size: Optional[AllowedPetSizes]
 
 
-class Adder:
-    pet_uuid: str
-    user_uuid: str
+# TODO: Add save checks for name, breed, energy and size, they all have to be set !!!

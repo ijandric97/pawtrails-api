@@ -1,6 +1,6 @@
 from typing import List
 
-from pawtrails.core.database import graph  # noqa
+from pawtrails.core.database import graph
 from pawtrails.models.pet import Pet
 from pawtrails.models.user import User
 
@@ -28,7 +28,7 @@ def seed() -> None:
     for i in range(0, 5):
         for j in range(i, 5):
             if i != j:
-                users[i].follow(users[j])
+                users[i].add_following(users[j])
 
     print("SEEDING PETS")
     pets: List[Pet] = []

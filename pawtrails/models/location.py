@@ -36,9 +36,7 @@ class Location(BaseModel):
         if not isinstance(loc_type, str):
             raise TypeError(f"Type {loc_type} is not a string.")
         loc_type = loc_type.lower()
-
         is_allowed_literal(loc_type, "Type", AllowedLocationTypes)
-
         self._type = loc_type
 
     @property
@@ -50,60 +48,65 @@ class Location(BaseModel):
         if not isinstance(size, str):
             raise TypeError(f"Size {size} is not a string.")
         size = size.lower()
-
         is_allowed_literal(size, "Size", AllowedLocationSizes)
-
         self._size = size
 
     @property
     def creator(self) -> User:
         return self._creator
 
+    def add_creator(self, user: User) -> bool:
+        if self._creator:
+            return False  # We already have a creator
+        self._creator.add(user, created_at=DateTime.utc_now())
+        return True
+
+    def remove_creator(self, user: User) -> bool:
+        if user not in self._creator:
+            return False
+        self._creator.remove(user)
+        return True
+
     @property
     def tags(self) -> List[Tag]:
         return self._tags
+
+    def add_tag(self, tag: Tag) -> bool:
+        if tag in self._tags:
+            return False
+        self._tags.add(tag, created_at=DateTime.utc_now())
+        return True
+
+    def remove_tag(self, tag: Tag) -> bool:
+        if tag not in self._tags:
+            return False
+        self._tags.remove(tag)
+        return True
 
     @property
     def favorites(self) -> List[User]:
         return self._favorites
 
-    def add_creator(self, user: User) -> bool:
-        if self._creator:
-            return False  # We already have a creator
-        self._creator.add(user, created_at=DateTime.utc_now())
-        self.save()
-        return True
-
-    def tag(self, tag: Tag) -> bool:
-        if tag in self._tags:
-            return False
-
-        self._tags.add(tag, created_at=DateTime.utc_now())
-        self.save()
-        return True
-
-    def untag(self, tag: Tag) -> bool:
-        if tag not in self._tags:
-            return False
-
-        self._tags.remove(tag)
-        self.save()
-        return True
-
-    def favorite(self, user: User) -> bool:
+    def add_favorite(self, user: User) -> bool:
         if user in self._favorites:
             return False
         self._favorites.add(user, created_at=DateTime.utc_now())
-        self.save()
         return True
 
-    def unfavorite(self, user: User) -> bool:
+    def remove_favorite(self, user: User) -> bool:
         if user not in self._favorites:
             return False
         self._favorites.add(user, created_at=DateTime.utc_now())
-        self.save()
         return True
 
 
 class LocationSchema(BaseSchema):
-    pass
+    name: str
+    description: str
+    type: AllowedLocationTypes
+    size: AllowedLocationSizes
+    location: str  # TODO: Not really, should be WGS84 a.k.a. py2neo spatial type...
+
+
+# TODO: Add WGS84 location inside :)
+# TODO: Add save checking

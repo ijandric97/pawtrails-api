@@ -14,7 +14,9 @@ from pawtrails.core.database import BaseModel, BaseSchema, repository
 from pawtrails.core.security import get_password_hash, verify_password
 
 if TYPE_CHECKING:
+    from pawtrails.models.location import Location
     from pawtrails.models.pet import Pet
+    from pawtrails.models.review import Review
 
 
 class User(BaseModel):
@@ -29,6 +31,22 @@ class User(BaseModel):
     _following = RelatedTo("pawtrails.models.user.User", "FOLLOWS")
     _followers = RelatedFrom("pawtrails.models.user.User", "FOLLOWS")
     _pets = RelatedTo("pawtrails.models.pet.Pet", "OWNS")
+    _locations = RelatedTo("pawtrails.models.location.Location", "ADDED")
+    _favorites = RelatedTo("pawtrails.models.location.Location", "FAVORS")
+    _reviews = RelatedTo("pawtrails.models.review.Review", "WROTE")
+
+    @classmethod
+    def get_by_is_active(
+        cls, is_active: bool, skip: int = 0, limit: int = 100
+    ) -> List[User]:
+        return [
+            user
+            for user in cls.match(repository)
+            .where(is_active=is_active)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
@@ -87,27 +105,61 @@ class User(BaseModel):
     def followers(self) -> List[User]:
         return [follow for follow in self._followers]
 
+    def add_following(self, user: User) -> bool:
+        if self == user or user in self._following:
+            return False
+        self._following.add(user, created_at=DateTime.utc_now())
+        return True
+
+    def remove_following(self, user: User) -> bool:
+        if self == user or user not in self._following:
+            return False
+        self._following.remove(user)
+        return True
+
     @property
     def pets(self) -> List[Pet]:
         return [pet for pet in self._pets]
 
-    def follow(self, user: User) -> bool:
-        if self == user or user in self._following:
+    def add_pet(self, pet: Pet) -> bool:
+        if pet in self._pets:
             return False
-
-        self._following.add(user, created_at=DateTime.utc_now())
-        self.save()  # NOTE: Saving is fine in methods, but not in properties
-
+        self._pets.add(pet)
         return True
 
-    def unfollow(self, user: User) -> bool:
-        if self == user or user not in self._following:
+    def remove_pet(self, pet: Pet) -> bool:
+        if pet not in self._pets:
             return False
-
-        self._following.remove(user)
-        self.save()
-
+        self._pets.remove(pet)
         return True
+
+    @property
+    def locations(self) -> List[Location]:
+        # TODO: Think about how to approach add, remove functions??
+        return self._locations
+
+    @property
+    def favorites(self) -> List[Location]:
+        return self._favorites
+
+    def add_favorite(self, location: Location) -> bool:
+        if location in self._locations:
+            return False
+        self._locations.add(location)
+        return True
+
+    def remove_favorite(self, location: Location) -> bool:
+        if location not in self._locations:
+            return False
+        self._locations.remove(location)
+        return True
+
+    @property
+    def review(self) -> List[Review]:
+        # TODO: Also how do we approach this hm...?
+        return self._reviews
+
+    # TODO: Add a save checking function
 
 
 class UserSchema(BaseSchema):
@@ -123,7 +175,7 @@ class UserFullSchema(UserSchema):
     # pets: Optional[List[PetSchema]]
 
 
-class RegisterUserSchema(Schema):
+class AddUserSchema(Schema):
     email: EmailStr = Field(example="user@example.com")
     username: Annotated[str, Field(example="user", min_length=3)]
     password: Annotated[str, Field(example="password", min_length=8)]

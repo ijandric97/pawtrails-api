@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from pawtrails.core.security import Token, create_access_token
 from pawtrails.core.settings import settings
-from pawtrails.models.user import RegisterUserSchema, User, UserFullSchema
+from pawtrails.models.user import AddUserSchema, User, UserFullSchema
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
 
 
 @router.post("/register", response_model=UserFullSchema)
-async def register(*, user_in: RegisterUserSchema) -> User:
+async def register(*, user_in: AddUserSchema) -> User:
     """Register a new user. Email address and username should be unique.
     You will still have to request the JWT access token via login route.
     """

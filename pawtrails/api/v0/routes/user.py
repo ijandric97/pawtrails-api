@@ -53,7 +53,7 @@ async def follow_user(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> User:
     user = await get_user_by_uuid(uuid)
-    if not current_user.follow(user):
+    if not current_user.add_following(user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You tried to follow already followed user or yourself.",
@@ -67,7 +67,7 @@ async def unfollow_user(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> None:
     user = await get_user_by_uuid(uuid)
-    if not current_user.unfollow(user):
+    if not current_user.remove_following(user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You tried to unfollow yourself or someone you are not following.",

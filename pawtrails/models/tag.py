@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 from py2neo.ogm import Property
+from pydantic import BaseModel as Schema
+from pydantic.fields import Field
+from typing_extensions import Annotated
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
 from pawtrails.utils import is_allowed_literal
@@ -26,6 +29,19 @@ class Tag(BaseModel):
     @classmethod
     def get_by_name(cls, name: str) -> Optional[Tag]:
         return cls.match(repository).where(name=name).first()
+
+    @classmethod
+    def get_by_color(
+        cls, color: AllowedTagColors, skip: int = 0, limit: int = 100
+    ) -> List[Tag]:
+        return [
+            tag
+            for tag in cls.match(repository)
+            .where(color=color)
+            .skip(skip)
+            .limit(limit)
+            .all()
+        ]
 
     @property
     def name(self) -> str:
@@ -62,3 +78,8 @@ class Tag(BaseModel):
 class TagSchema(BaseSchema):
     name: str
     colr: AllowedTagColors
+
+
+class AddTagSchema(Schema):
+    name: Annotated[str, Field(example="Important", min_length=3)]
+    color: AllowedTagColors
