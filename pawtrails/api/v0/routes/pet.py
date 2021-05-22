@@ -62,11 +62,8 @@ async def update_pet(
     current_user: User = Depends(get_current_active_user),
 ) -> Pet:
     pet = await get_pet(uuid)
-
-    # pet = Pet(**pet_in.dict())
-    # pet.add_owner(current_user)
-    # pet.save()
-    # FIXME: Finish this plsss
+    pet.update(**pet_in.dict())
+    pet.save()
     return pet
 
 

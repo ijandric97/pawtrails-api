@@ -20,7 +20,9 @@ def seed() -> None:
             "username": f"user{i}",
             "password": "password",
         }
-        users.append(User(**user_in))
+        user = User(**user_in)
+        user.save()
+        users.append(user)
 
     print("SEEDING FOLLOWS")  # Make everyone follow everyone
     for i in range(0, 5):
@@ -37,7 +39,9 @@ def seed() -> None:
             "energy": 5,
             "size": "Medium",
         }
-        pets.append(Pet(**pet_in))
+        pet = Pet(**pet_in)
+        pet.save()
+        pets.append(pet)
 
     print("SEEDING OWNERS")
     for i in range(0, 5):

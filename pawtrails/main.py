@@ -24,6 +24,12 @@ if settings.BACKEND_CORS_ORIGINS:
 
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
+
+@app.get("/healthcheck", status_code=200)
+def hello() -> None:
+    return
+
+
 # This line is necessary for debugging the application using VSCode
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

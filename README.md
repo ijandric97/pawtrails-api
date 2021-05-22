@@ -84,7 +84,5 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 > Please do not skip pre-commit hooks :)
 
 ## TODO
-Poetry supports scripts... add them :)
 Write better documentation
 Connect ECS deployment to CodePipeline
-Following system should probably use usernames and not e-mails, Therefore usernames should not be changeable
