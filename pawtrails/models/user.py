@@ -25,9 +25,9 @@ class User(BaseModel):
     _username = Property(key="username")
     _password = Property(key="password")
 
-    _following = RelatedTo("User", "FOLLOWS")
-    _followers = RelatedFrom("User", "FOLLOWS")
     # NOTE: Import this whole things so there is not CIRCULAR IMPORTS
+    _following = RelatedTo("pawtrails.models.user.User", "FOLLOWS")
+    _followers = RelatedFrom("pawtrails.models.user.User", "FOLLOWS")
     _pets = RelatedTo("pawtrails.models.pet.Pet", "OWNS")
 
     @classmethod
