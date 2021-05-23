@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, List, Literal, Optional
 
 from neotime import DateTime
+from py2neo.data.spatial import Point, WGS84Point
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
+from pydantic import BaseModel as Schema
 
 from pawtrails.core.database import BaseModel, BaseSchema
-from pawtrails.utils import is_allowed_literal
+from pawtrails.models.tag import TagSchema
+from pawtrails.models.user import UserSchema
+from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
     from pawtrails.models.tag import Tag
@@ -18,9 +22,9 @@ AllowedLocationSizes = Literal["small", "medium", "big"]
 
 class Location(BaseModel):
     name = Property(key="name")
-    description = Property(key="description")
-    _type = Property(key="type")
-    _size = Property(key="size")
+    description = Property(key="description", default="")
+    _type = Property(key="type", default="park")
+    _size = Property(key="size", default="medium")
     _location = Property(key="location")
 
     _creator = RelatedFrom("pawtrails.models.user.User", "CREATED")
@@ -50,6 +54,18 @@ class Location(BaseModel):
         size = size.lower()
         is_allowed_literal(size, "Size", AllowedLocationSizes)
         self._size = size
+
+    @property
+    def location(self) -> Point:
+        return self._location
+
+    @location.setter
+    def location(self, longitude: float, latitude: float) -> None:
+        if not isinstance(longitude, float):
+            raise TypeError(f"Longitude {longitude} is not a float.")
+        if not isinstance(latitude, float):
+            raise TypeError(f"Latitude {latitude} is not a float.")
+        self._location = WGS84Point((longitude, latitude))
 
     @property
     def creator(self) -> User:
@@ -99,14 +115,37 @@ class Location(BaseModel):
         self._favorites.add(user, created_at=DateTime.utc_now())
         return True
 
+    @override
+    def save(self) -> None:
+        if not self.name:
+            raise AttributeError("Cannot save Location: name not defined.")
+        if not self._location:
+            raise AttributeError("Cannot save Location: location not defined.")
+        if not self._creator:
+            raise AttributeError("Cannot save Location: creator not defined.")
+        if len(self._creator) > 1:
+            raise AttributeError("Cannot save Location: more than 1 creator.")
+        super().save()
+
 
 class LocationSchema(BaseSchema):
     name: str
     description: str
     type: AllowedLocationTypes
     size: AllowedLocationSizes
-    location: str  # TODO: Not really, should be WGS84 a.k.a. py2neo spatial type...
+    location: Point
 
 
-# TODO: Add WGS84 location inside :)
-# TODO: Add save checking
+class FullLocationSchema(LocationSchema):
+    creator: UserSchema
+    tags: Optional[List[TagSchema]]
+    favorites: Optional[List[UserSchema]]
+
+
+class AddLocationSchema(Schema):
+    name: str
+    description: str
+    type: AllowedLocationTypes
+    size: AllowedLocationSizes
+    longitude: float
+    latitude: float

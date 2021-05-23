@@ -124,7 +124,7 @@ class User(BaseModel):
     def add_pet(self, pet: Pet) -> bool:
         if pet in self._pets:
             return False
-        self._pets.add(pet)
+        self._pets.add(pet, created_at=DateTime.utc_now())
         return True
 
     def remove_pet(self, pet: Pet) -> bool:
@@ -145,7 +145,7 @@ class User(BaseModel):
     def add_favorite(self, location: Location) -> bool:
         if location in self._locations:
             return False
-        self._locations.add(location)
+        self._locations.add(location, created_at=DateTime.utc_now())
         return True
 
     def remove_favorite(self, location: Location) -> bool:

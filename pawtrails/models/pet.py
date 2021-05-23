@@ -9,6 +9,7 @@ from pydantic import Field
 from typing_extensions import Annotated
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
@@ -93,6 +94,7 @@ class Pet(BaseModel):
     def size(self, size: str) -> None:
         if not isinstance(size, str):
             raise TypeError(f"Size {size} is not a string.")
+        size = size.lower()
         is_allowed_literal(size, "Size", AllowedPetSizes)
         self._size = size
 
@@ -114,6 +116,14 @@ class Pet(BaseModel):
 
     @override
     def save(self) -> None:
+        if not self.name:
+            raise AttributeError("Cannot save Pet: name not defined.")
+        if not self.breed:
+            raise AttributeError("Cannot save Pet: breed not defined.")
+        if not self._energy:
+            raise AttributeError("Cannot save Pet: energy not defined.")
+        if not self._size:
+            raise AttributeError("Cannot save Pet: size not defined.")
         if not self._owners:
             raise AttributeError("Cannot save Pet: at least 1 owner is not defined.")
         super().save()
@@ -126,7 +136,8 @@ class PetSchema(BaseSchema):
     size: AllowedPetSizes
 
 
-# TODO: Full pet schema, including owners :)
+class FullPetSchema(PetSchema):
+    owners: List[UserSchema]
 
 
 class AddPetSchema(Schema):
@@ -141,6 +152,3 @@ class UpdatePetSchema(Schema):
     breed: Annotated[Optional[str], Field(example="Shiba Inu", min_length=1)]
     energy: Optional[AllowedPetEnergies]
     size: Optional[AllowedPetSizes]
-
-
-# TODO: Add save checks for name, breed, energy and size, they all have to be set !!!

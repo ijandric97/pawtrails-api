@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Literal, Optional
 
+from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.models.location import LocationSchema
+from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
@@ -53,7 +56,7 @@ class Review(BaseModel):
     def add_writer(self, user: User) -> bool:
         if self._writer:
             return False
-        self._writer.add(user)
+        self._writer.add(user, created_at=DateTime.utc_now())
         return True
 
     def remove_writer(self, user: User) -> bool:
@@ -69,7 +72,7 @@ class Review(BaseModel):
     def add_location(self, location: Location) -> bool:
         if self._location:
             return False
-        self._location.add(location)
+        self._location.add(location, created_at=DateTime.utc_now())
         return True
 
     def remove_location(self, location: Location) -> bool:
@@ -96,7 +99,9 @@ class ReviewSchema(BaseSchema):
     grade: AllowedReviewGrades
 
 
-# TODO: Full schema, with user and location schema included
+class FullReviewSchema(BaseSchema):
+    writer: Optional[UserSchema]
+    location: Optional[LocationSchema]
 
 
 class AddReviewSchema(Schema):
