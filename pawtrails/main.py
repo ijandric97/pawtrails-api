@@ -26,8 +26,8 @@ app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
 @app.get("/healthcheck", status_code=200)
-async def healthcheck() -> None:
-    return
+async def healthcheck() -> str:
+    return "OK"
 
 
 # This line is necessary for debugging the application using VSCode

@@ -50,7 +50,7 @@ class User(BaseModel):
 
     @classmethod
     def get_by_email(cls, email: str) -> Optional[User]:
-        return cls.match(repository, email).first()
+        return cls.match(repository).where(email=email).first()
 
     @classmethod
     def get_by_username(cls, username: str) -> Optional[User]:
@@ -155,7 +155,7 @@ class User(BaseModel):
         return True
 
     @property
-    def review(self) -> List[Review]:
+    def reviews(self) -> List[Review]:
         # TODO: Also how do we approach this hm...?
         return self._reviews
 

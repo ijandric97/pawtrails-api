@@ -4,7 +4,9 @@ from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 
 from pawtrails.api.deps import get_current_active_user, get_current_user
+from pawtrails.models.location import Location, LocationSchema
 from pawtrails.models.pet import Pet, PetSchema
+from pawtrails.models.review import Review, ReviewSchema
 from pawtrails.models.user import UpdateUserSchema, User, UserFullSchema, UserSchema
 
 router = APIRouter()
@@ -27,7 +29,6 @@ async def update_user(
     if user_in.email:
         try:
             current_user.email = user_in.email
-            print("OH NO", flush=True)
         except Exception:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -95,6 +96,27 @@ async def get_pets(current_user: User = Depends(get_current_user)) -> List[Pet]:
     return current_user.pets
 
 
+@router.get("/locations", response_model=List[LocationSchema])
+async def get_locations(
+    current_user: User = Depends(get_current_user),
+) -> List[Location]:
+    return current_user.locations
+
+
+@router.get("/favorites", response_model=List[LocationSchema])
+async def get_favorites(
+    current_user: User = Depends(get_current_user),
+) -> List[Location]:
+    return current_user.favorites
+
+
+@router.get("/reviews", response_model=List[ReviewSchema])
+async def get_reviews(
+    current_user: User = Depends(get_current_user),
+) -> List[Review]:
+    return current_user.reviews
+
+
 @router.get("/list", response_model=List[UserSchema])
 async def get_user_list(skip: int = 0, limit: int = 100) -> List[User]:
     return User.get_all(skip, limit)
@@ -128,3 +150,21 @@ async def get_following_by_uuid(uuid: str) -> List[User]:
 async def get_pets_by_uuid(uuid: str) -> List[Pet]:
     user = await get_user_by_uuid(uuid)  # NOTE: coroutines have to be awaited
     return user.pets
+
+
+@router.get("/{uuid}/locations", response_model=List[LocationSchema])
+async def get_locations_by_uuid(uuid: str) -> List[Location]:
+    user = await get_user_by_uuid(uuid)
+    return user.locations
+
+
+@router.get("/{uuid}/favorites", response_model=List[LocationSchema])
+async def get_favorites_by_uuid(uuid: str) -> List[Location]:
+    user = await get_user_by_uuid(uuid)
+    return user.favorites
+
+
+@router.get("/{uuid}/reviews", response_model=List[ReviewSchema])
+async def get_reviews_by_uuid(uuid: str) -> List[Review]:
+    user = await get_user_by_uuid(uuid)
+    return user.reviews

@@ -8,7 +8,6 @@ import jsonpickle
 from neotime import DateTime
 from py2neo import Graph
 from py2neo.ogm import Model, Property, Repository
-from pydantic import UUID4
 from pydantic import BaseModel as Schema
 from pydantic import Field
 
@@ -134,7 +133,7 @@ class BaseSchema(Schema):
     """A Pydantic schema model that matches the py2Neo OGM BaseModel described above.
     By default orm_mode is set to True."""
 
-    uuid: Optional[UUID4] = Field(example="12345678-1234-1234-1234-123456789abc")
+    uuid: Optional[str] = Field(example="12345678-1234-1234-1234-123456789abc")
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

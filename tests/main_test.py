@@ -1,11 +1,7 @@
 from fastapi.testclient import TestClient
 
-from pawtrails.main import app
 
-client = TestClient(app)
-
-
-def test_healthcheck() -> None:
+def test_healthcheck(client: TestClient) -> None:
     response = client.get("/healthcheck")
     assert response.status_code == 200
-    assert response.json() is None
+    assert response.json() == "OK"

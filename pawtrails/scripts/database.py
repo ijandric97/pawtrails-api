@@ -11,6 +11,7 @@ def prune() -> None:
 
 
 def seed() -> None:
+    prune()
     print("SEEDING USERS")
 
     users: List[User] = []
@@ -40,10 +41,10 @@ def seed() -> None:
             "size": "Medium",
         }
         pet = Pet(**pet_in)
-        pet.save()
         pets.append(pet)
 
     print("SEEDING OWNERS")
     for i in range(0, 5):
         for j in range(i, 5):
             pets[i].add_owner(users[j])
+            pets[i].save()
