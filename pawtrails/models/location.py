@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, Optional
+from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Tuple
 
 from neotime import DateTime
-from py2neo.data.spatial import Point, WGS84Point
+from py2neo.data.spatial import WGS84Point
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 
@@ -13,6 +13,7 @@ from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
+    from pawtrails.models.review import Review
     from pawtrails.models.tag import Tag
     from pawtrails.models.user import User
 
@@ -30,6 +31,7 @@ class Location(BaseModel):
     _creator = RelatedFrom("pawtrails.models.user.User", "CREATED")
     _tags = RelatedTo("pawtrails.models.tag.Tag", "TAGGED_AS")
     _favorites = RelatedFrom("pawtrails.models.user.User", "FAVORITED")
+    _reviews = RelatedFrom("pawtrails.models.review.Review", "FOR")
 
     @property
     def type(self) -> AllowedLocationTypes:
@@ -56,11 +58,18 @@ class Location(BaseModel):
         self._size = size
 
     @property
-    def location(self) -> Point:
-        return self._location
+    def location(self) -> Dict[str, float]:
+        if self._location:
+            print(self._location, flush=True)
+            return {
+                "longitude": self._location[0],
+                "latitude": self._location[1],
+            }
+        return {}
 
     @location.setter
-    def location(self, longitude: float, latitude: float) -> None:
+    def location(self, location_tuple: Tuple[float, float]) -> None:
+        longitude, latitude = location_tuple
         if not isinstance(longitude, float):
             raise TypeError(f"Longitude {longitude} is not a float.")
         if not isinstance(latitude, float):
@@ -115,6 +124,10 @@ class Location(BaseModel):
         self._favorites.add(user, created_at=DateTime.utc_now())
         return True
 
+    @property
+    def reviews(self) -> List[Review]:
+        return self._reviews
+
     @override
     def save(self) -> None:
         if not self.name:
@@ -133,7 +146,7 @@ class LocationSchema(BaseSchema):
     description: str
     type: AllowedLocationTypes
     size: AllowedLocationSizes
-    location: Point
+    location: Dict[str, float]
 
 
 class FullLocationSchema(LocationSchema):
@@ -147,5 +160,12 @@ class AddLocationSchema(Schema):
     description: str
     type: AllowedLocationTypes
     size: AllowedLocationSizes
-    longitude: float
-    latitude: float
+    position: Tuple[float, float]
+
+
+class UpdateLocationSchema(Schema):
+    name: Optional[str]
+    description: Optional[str]
+    type: Optional[AllowedLocationTypes]
+    size: Optional[AllowedLocationSizes]
+    position: Optional[Tuple[float, float]]

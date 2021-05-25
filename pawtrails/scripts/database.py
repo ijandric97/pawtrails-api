@@ -1,6 +1,7 @@
 from typing import List
 
 from pawtrails.core.database import graph
+from pawtrails.models.location import Location
 from pawtrails.models.pet import Pet
 from pawtrails.models.user import User
 
@@ -30,6 +31,7 @@ def seed() -> None:
         for j in range(i, 5):
             if i != j:
                 users[i].add_following(users[j])
+                users[i].save()
 
     print("SEEDING PETS")
     pets: List[Pet] = []
@@ -48,3 +50,20 @@ def seed() -> None:
         for j in range(i, 5):
             pets[i].add_owner(users[j])
             pets[i].save()
+
+    print("SEEDING LOCATIONS")
+    locs: List[Location] = []
+    for i in range(0, 5):
+        loc_in = {
+            "name": f"loc{i}",
+            "description": "location",
+            "type": "Park",
+            "size": "Medium",
+            "location": (47.279229, 17.126250),
+        }
+        loc = Location(**loc_in)
+        locs.append(loc)
+
+    for i in range(0, 5):
+        locs[i].add_creator(users[i])
+        locs[i].save()

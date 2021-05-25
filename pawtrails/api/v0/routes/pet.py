@@ -62,6 +62,7 @@ async def update_pet(
     current_user: User = Depends(get_current_active_user),
 ) -> Pet:
     pet = await get_pet(uuid)
+    await _check_ownership(current_user, pet)
     pet.update(**pet_in.dict())
     pet.save()
     return pet
@@ -73,10 +74,10 @@ async def get_pet_owners(uuid: str) -> List[User]:
     return pet.owners
 
 
-@router.post("/{uuid}/owner", response_model=None)
+@router.post("/{uuid}/owner", response_model=PetSchema)
 async def add_pet_owner(
     uuid: str, user_uuid: str, current_user: User = Depends(get_current_active_user)
-) -> None:
+) -> Pet:
     pet = await get_pet(uuid)
     await _check_ownership(current_user, pet)
     user = await get_user_by_uuid(user_uuid)
@@ -87,11 +88,14 @@ async def add_pet_owner(
             detail="That user already owns this pet.",
         )
 
+    pet.save()
+    return pet
 
-@router.delete("/{uuid}/owner", response_model=None)
+
+@router.delete("/{uuid}/owner", response_model=PetSchema)
 async def remove_pet_owner(
     uuid: str, user_uuid: str, current_user: User = Depends(get_current_active_user)
-) -> None:
+) -> Pet:
     pet = await get_pet(uuid)
     await _check_ownership(current_user, pet)
     user = await get_user_by_uuid(user_uuid)
@@ -105,3 +109,6 @@ async def remove_pet_owner(
     # All owners decided to abandon this pet, remove it from the database
     if not pet.owners:
         pet.delete()
+
+    pet.save()
+    return pet

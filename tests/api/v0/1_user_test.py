@@ -1,48 +1,32 @@
 from fastapi.testclient import TestClient
 
 from pawtrails.core.settings import settings
-from tests.conftest import bearer_header, get_uuid
-
-TEST_USERNAME = "pytest_changed"
+from tests.api.data import testData
 
 
-class TestGetMyUser:
-    def test_no_token(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/")
-        assert response.status_code == 401
-
-    def test_success(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/", headers=bearer_header())
-        response_json = response.json()
-        assert response.status_code == 200
-        assert response_json["uuid"] == get_uuid()
-
-
-class TestDeleteUser:
-    def test_no_token(self, client: TestClient) -> None:
-        response = client.delete(f"{settings.API_PREFIX}/user/")
-        assert response.status_code == 401
-
-
-class TestUpdateUser:
-    def test_no_token(self, client: TestClient) -> None:
-        response = client.patch(f"{settings.API_PREFIX}/user/")
-        assert response.status_code == 401
-
+class TestGetUserList:
     def test_invalid_params(self, client: TestClient) -> None:
-        response = client.patch(f"{settings.API_PREFIX}/user/", headers=bearer_header())
+        response = client.get(f"{settings.API_PREFIX}/user/?limit=invalidd")
         assert response.status_code == 422
 
     def test_success(self, client: TestClient) -> None:
-        patch_data = {
-            "username": TEST_USERNAME,
-        }
-        response = client.patch(
-            f"{settings.API_PREFIX}/user/", headers=bearer_header(), json=patch_data
-        )
+        response = client.get(f"{settings.API_PREFIX}/user/")
         response_json = response.json()
         assert response.status_code == 200
-        assert response_json["username"] == TEST_USERNAME
+        assert len(response_json) == 6
+        testData.user0_uuid = response_json[0]["uuid"]
+
+    def test_skip(self, client: TestClient) -> None:
+        response = client.get(f"{settings.API_PREFIX}/user/?skip=4")
+        response_json = response.json()
+        assert response.status_code == 200
+        assert len(response_json) == 2
+
+    def test_limit(self, client: TestClient) -> None:
+        response = client.get(f"{settings.API_PREFIX}/user/?limit=2")
+        response_json = response.json()
+        assert response.status_code == 200
+        assert len(response_json) == 2
 
 
 class TestGetUserByUUID:
@@ -51,10 +35,10 @@ class TestGetUserByUUID:
         assert response.status_code == 404
 
     def test_success(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/{get_uuid()}")
+        response = client.get(f"{settings.API_PREFIX}/user/{testData.user0_uuid}")
         response_json = response.json()
         assert response.status_code == 200
-        assert response_json["username"] == TEST_USERNAME
+        assert response_json["username"] == testData.USER0_USERNAME
 
 
 class TestGetFollowersByUUID:
@@ -65,7 +49,9 @@ class TestGetFollowersByUUID:
         assert response.status_code == 404
 
     def test_success(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/{get_uuid()}/followers")
+        response = client.get(
+            f"{settings.API_PREFIX}/user/{testData.user0_uuid}/followers"
+        )
         response_json = response.json()
         assert response.status_code == 200
         assert response_json == []
@@ -79,7 +65,9 @@ class TestGetFollowingByUUID:
         assert response.status_code == 404
 
     def test_success(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/{get_uuid()}/following")
+        response = client.get(
+            f"{settings.API_PREFIX}/user/{testData.user0_uuid}/following"
+        )
         response_json = response.json()
         assert response.status_code == 200
         assert response_json == []
@@ -93,7 +81,55 @@ class TestGetPetsByUUID:
         assert response.status_code == 404
 
     def test_success(self, client: TestClient) -> None:
-        response = client.get(f"{settings.API_PREFIX}/user/{get_uuid()}/pets")
+        response = client.get(f"{settings.API_PREFIX}/user/{testData.user0_uuid}/pets")
+        response_json = response.json()
+        assert response.status_code == 200
+        assert len(response_json) == 1
+
+
+class TestGetLocationsByUUID:
+    def test_invalid_user(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/gibberish_user_wont_exist/locations"
+        )
+        assert response.status_code == 404
+
+    def test_success(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/{testData.user0_uuid}/locations"
+        )
+        response_json = response.json()
+        assert response.status_code == 200
+        assert response_json == []
+
+
+class TestGetFavoritesByUUID:
+    def test_invalid_user(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/gibberish_user_wont_exist/favorites"
+        )
+        assert response.status_code == 404
+
+    def test_success(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/{testData.user0_uuid}/favorites"
+        )
+        response_json = response.json()
+        assert response.status_code == 200
+        assert response_json == []
+
+
+class TestGetReviewsByUUID:
+    def test_invalid_user(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/gibberish_user_wont_exist/reviews"
+        )
+        assert response.status_code == 404
+
+    def test_success(self, client: TestClient) -> None:
+        response = client.get(
+            f"{settings.API_PREFIX}/user/{testData.user0_uuid}/reviews"
+        )
         response_json = response.json()
         assert response.status_code == 200
         assert response_json == []
