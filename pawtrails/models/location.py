@@ -6,6 +6,7 @@ from neotime import DateTime
 from py2neo.data.spatial import WGS84Point
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
+from pydantic.fields import Field
 
 from pawtrails.core.database import BaseModel, BaseSchema
 from pawtrails.models.tag import TagSchema
@@ -60,7 +61,6 @@ class Location(BaseModel):
     @property
     def location(self) -> Dict[str, float]:
         if self._location:
-            print(self._location, flush=True)
             return {
                 "longitude": self._location[0],
                 "latitude": self._location[1],
@@ -78,7 +78,9 @@ class Location(BaseModel):
 
     @property
     def creator(self) -> User:
-        return self._creator
+        for creator in self._creator:
+            return creator
+        return self._creator  # This in reality is None but Mypy does not throw error :)
 
     def add_creator(self, user: User) -> bool:
         if self._creator:
@@ -94,7 +96,7 @@ class Location(BaseModel):
 
     @property
     def tags(self) -> List[Tag]:
-        return self._tags
+        return [tag for tag in self._tags]
 
     def add_tag(self, tag: Tag) -> bool:
         if tag in self._tags:
@@ -110,7 +112,7 @@ class Location(BaseModel):
 
     @property
     def favorites(self) -> List[User]:
-        return self._favorites
+        return [favorite for favorite in self._favorites]
 
     def add_favorite(self, user: User) -> bool:
         if user in self._favorites:
@@ -126,7 +128,7 @@ class Location(BaseModel):
 
     @property
     def reviews(self) -> List[Review]:
-        return self._reviews
+        return [review for review in self._reviews]
 
     @override
     def save(self) -> None:
@@ -146,7 +148,7 @@ class LocationSchema(BaseSchema):
     description: str
     type: AllowedLocationTypes
     size: AllowedLocationSizes
-    location: Dict[str, float]
+    location: Dict[str, float] = Field(example="longitude, latitude")
 
 
 class FullLocationSchema(LocationSchema):
@@ -160,7 +162,7 @@ class AddLocationSchema(Schema):
     description: str
     type: AllowedLocationTypes
     size: AllowedLocationSizes
-    position: Tuple[float, float]
+    location: Tuple[float, float] = Field(example="45, 45")
 
 
 class UpdateLocationSchema(Schema):
@@ -168,4 +170,4 @@ class UpdateLocationSchema(Schema):
     description: Optional[str]
     type: Optional[AllowedLocationTypes]
     size: Optional[AllowedLocationSizes]
-    position: Optional[Tuple[float, float]]
+    location: Optional[Tuple[float, float]] = Field(example="45, 45")

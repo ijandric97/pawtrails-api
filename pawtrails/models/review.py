@@ -19,7 +19,7 @@ AllowedReviewGrades = Literal[1, 2, 3, 4, 5]
 
 
 class Review(BaseModel):
-    comment = Property(key="grade", default="")
+    comment = Property(key="comment", default="")
     _grade = Property(key="grade", default=3)
 
     _writer = RelatedFrom("pawtrails.models.user.User", "WROTE")
@@ -51,7 +51,9 @@ class Review(BaseModel):
 
     @property
     def writer(self) -> User:
-        return self._writer
+        for writer in self._writer:
+            return writer
+        return self._writer  # This in reality is None but Mypy does not throw error
 
     def add_writer(self, user: User) -> bool:
         if self._writer:
@@ -67,7 +69,9 @@ class Review(BaseModel):
 
     @property
     def location(self) -> Location:
-        return self._location
+        for location in self._location:
+            return location
+        return self._location  # This in reality is None but Mypy does not throw error
 
     def add_location(self, location: Location) -> bool:
         if self._location:

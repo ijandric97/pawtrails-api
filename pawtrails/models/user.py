@@ -136,7 +136,7 @@ class User(BaseModel):
     @property
     def locations(self) -> List[Location]:
         # TODO: Think about how to approach add, remove functions??
-        return self._locations
+        return [location for location in self._locations]
 
     @property
     def favorites(self) -> List[Location]:
@@ -157,7 +157,7 @@ class User(BaseModel):
     @property
     def reviews(self) -> List[Review]:
         # TODO: Also how do we approach this hm...?
-        return self._reviews
+        return [review for review in self._reviews]
 
     # TODO: Add a save checking function
 

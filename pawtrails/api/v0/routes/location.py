@@ -10,7 +10,12 @@ from pawtrails.models.location import (
     LocationSchema,
     UpdateLocationSchema,
 )
-from pawtrails.models.review import AddReviewSchema, Review, ReviewSchema
+from pawtrails.models.review import (
+    AddReviewSchema,
+    Review,
+    ReviewSchema,
+    UpdateReviewSchema,
+)
 from pawtrails.models.user import User
 
 router = APIRouter()
@@ -73,7 +78,7 @@ async def update_location(
 
 
 @router.get("/{uuid}/review", response_model=List[ReviewSchema])
-async def get_reviews(uuid: str) -> None:
+async def get_reviews(uuid: str) -> List[Review]:
     loc = await get_location(uuid)
     return loc.reviews
 
@@ -92,11 +97,52 @@ async def add_review(
     return rew
 
 
+@router.get("/{uuid}/review/{review_uuid}", response_model=ReviewSchema)
+async def get_review(uuid: str, review_uuid: str) -> Review:
+    loc = await get_location(uuid)  # noqa
+    rew = cast(Review, Review.get_by_uuid(review_uuid))
+    if loc not in rew.location:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This review does not belong to this location!",
+        )
+    if not rew:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The location with the uuid {uuid} does not exist!",
+        )
+    return rew
+
+
 @router.delete("/{uuid}/review/{review_uuid}")
-async def remove_review(uuid: str) -> None:
-    pass
+async def remove_review(
+    uuid: str,
+    review_uuid: str,
+    current_user: User = Depends(get_current_active_user),
+) -> None:
+    rew = await get_review(uuid, review_uuid)
+    if current_user not in rew.writer:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You did not create this review!",
+        )
+    rew.delete()
 
 
-@router.patch("/{uuid}/review/{review_uuid}")
-async def update_review(uuid: str) -> None:
-    pass
+@router.patch("/{uuid}/review/{review_uuid}", response_model=ReviewSchema)
+async def update_review(
+    uuid: str,
+    review_uuid: str,
+    rew_in: UpdateReviewSchema,
+    current_user: User = Depends(get_current_active_user),
+) -> Review:
+    rew = await get_review(uuid, review_uuid)
+    if current_user not in rew.writer:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You did not create this review!",
+        )
+
+    rew.update(**rew_in.dict())
+    rew.save()
+    return rew
