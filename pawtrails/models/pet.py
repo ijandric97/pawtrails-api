@@ -16,7 +16,18 @@ if TYPE_CHECKING:
     from pawtrails.models.user import User
 
 AllowedPetEnergies = Literal[1, 2, 3, 4, 5]
-AllowedPetSizes = Literal["small", "medium", "big"]
+AllowedPetSizes = Literal[
+    "Mini",
+    "mini",
+    "Small",
+    "small",
+    "Medium",
+    "medium",
+    "Large",
+    "large",
+    "Giant",
+    "giant",
+]
 
 
 class Pet(BaseModel):

@@ -18,8 +18,30 @@ if TYPE_CHECKING:
     from pawtrails.models.tag import Tag
     from pawtrails.models.user import User
 
-AllowedLocationTypes = Literal["park", "field"]
-AllowedLocationSizes = Literal["small", "medium", "big"]
+AllowedLocationTypes = Literal[
+    "Park",
+    "park",
+    "Meadow",
+    "meadow",
+    "Fenced meadow",
+    "fenced meadow",
+    "Beach",
+    "beach",
+    "Other",
+    "other",
+]
+AllowedLocationSizes = Literal[
+    "Mini",
+    "mini",
+    "Small",
+    "small",
+    "Medium",
+    "medium",
+    "Large",
+    "large",
+    "Giant",
+    "giant",
+]
 
 
 class Location(BaseModel):

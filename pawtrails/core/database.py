@@ -109,11 +109,12 @@ class BaseModel(Model):
 
     def save(self) -> None:
         """Save the Neo4j Model Object"""
+        current_time = DateTime.utc_now()
         if not self._uuid:
             self._uuid = uuid4().hex
         if not self._created_at:
-            self._created_at = DateTime.utc_now()
-        self._updated_at = DateTime.utc_now()
+            self._created_at = current_time
+        self._updated_at = current_time
         repository.save(self)
 
     def delete(self) -> None:
