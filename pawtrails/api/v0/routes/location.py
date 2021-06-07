@@ -34,7 +34,12 @@ async def _check_ownership(user: User, loc: Location) -> None:
 
 
 @router.get("/", response_model=List[LocationSchema])
-async def get_locations(
+async def get_locations(skip: int = 0, limit: int = 100) -> List[Location]:
+    return Location.get_all(skip, limit)
+
+
+@router.post("/search", response_model=List[LocationSchema])
+async def search_locations(
     search_in: SearchLocationSchema,
     current_user: User = Depends(get_current_active_user),
 ) -> List[Location]:
