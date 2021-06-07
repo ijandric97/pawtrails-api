@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 from py2neo.ogm import Property
 from pydantic import BaseModel as Schema
@@ -8,11 +8,8 @@ from pydantic.fields import Field
 from typing_extensions import Annotated
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.models.constants import AllowedTagColors
 from pawtrails.utils import is_allowed_literal
-
-AllowedTagColors = Literal[
-    "primary", "secondary", "success", "danger", "warning", "info", "light", "dark"
-]
 
 
 class Tag(BaseModel):

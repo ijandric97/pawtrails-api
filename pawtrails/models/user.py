@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from neotime import DateTime
+from py2neo.data.spatial import WGS84Point
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 from pydantic import EmailStr
@@ -22,17 +23,19 @@ if TYPE_CHECKING:
 class User(BaseModel):
     # TODO: Actually set this to false until user activates with mail
     # TODO: email on registering, use AWS for that
+    full_name = Property(key="full_name", default="")
     is_active = Property(key="is_active", default=True)
     _email = Property(key="email")
     _username = Property(key="username")
     _password = Property(key="password")
+    _home = Property(key="home")
 
     # NOTE: Import this whole things so there is not CIRCULAR IMPORTS
     _following = RelatedTo("pawtrails.models.user.User", "FOLLOWS")
     _followers = RelatedFrom("pawtrails.models.user.User", "FOLLOWS")
     _pets = RelatedTo("pawtrails.models.pet.Pet", "OWNS")
-    _locations = RelatedTo("pawtrails.models.location.Location", "ADDED")
-    _favorites = RelatedTo("pawtrails.models.location.Location", "FAVORS")
+    _locations = RelatedTo("pawtrails.models.location.Location", "CREATED")
+    _favorites = RelatedTo("pawtrails.models.location.Location", "FAVORITED")
     _reviews = RelatedTo("pawtrails.models.review.Review", "WROTE")
 
     @classmethod
@@ -102,8 +105,8 @@ class User(BaseModel):
         return [follow for follow in self._following]
 
     @property
-    def followers(self) -> List[User]:
-        return [follow for follow in self._followers]
+    def following_count(self) -> int:
+        return len(self._following)
 
     def add_following(self, user: User) -> bool:
         if self == user or user in self._following:
@@ -116,6 +119,14 @@ class User(BaseModel):
             return False
         self._following.remove(user)
         return True
+
+    @property
+    def followers(self) -> List[User]:
+        return [follow for follow in self._followers]
+
+    @property
+    def followers_count(self) -> int:
+        return len(self._followers)
 
     @property
     def pets(self) -> List[Pet]:
@@ -143,34 +154,55 @@ class User(BaseModel):
         return self._favorites
 
     def add_favorite(self, location: Location) -> bool:
-        if location in self._locations:
+        if location in self._favorites:
             return False
-        self._locations.add(location, created_at=DateTime.utc_now())
+        self._favorites.add(location, created_at=DateTime.utc_now())
         return True
 
     def remove_favorite(self, location: Location) -> bool:
-        if location not in self._locations:
+        if location not in self._favorites:
             return False
-        self._locations.remove(location)
+        self._favorites.remove(location)
         return True
 
     @property
+    def home(self) -> Optional[WGS84Point]:
+        if self._home:
+            return WGS84Point((self._home[0], self._home[1]))
+        return None
+
+    def set_home(self, longitude: float, latitude: float) -> None:
+        if not isinstance(longitude, float):
+            raise TypeError(f"Longitude {longitude} is not a float.")
+        if not isinstance(latitude, float):
+            raise TypeError(f"Latitude {latitude} is not a float.")
+        self._home = WGS84Point((longitude, latitude))
+
+    def remove_home(self) -> None:
+        self._home = None
+
+    # TODO: Add endpoints for this
+
+    @property
     def reviews(self) -> List[Review]:
-        # TODO: Also how do we approach this hm...?
         return [review for review in self._reviews]
 
     # TODO: Add a save checking function
 
 
 class UserSchema(BaseSchema):
+    full_name: Optional[str]
     username: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     is_active: Optional[bool] = True
+    following_count: Optional[int]
+    followers_count: Optional[int]
 
 
 class UserFullSchema(UserSchema):
     email: Optional[EmailStr]
+    home: Optional[WGS84Point]
     # following: Optional[List[UserSchema]]
     # pets: Optional[List[PetSchema]]
 
@@ -185,3 +217,6 @@ class UpdateUserSchema(Schema):
     email: Optional[EmailStr] = Field(example="user@example.com")
     username: Annotated[Optional[str], Field(example="user", min_length=3)]
     password: Annotated[Optional[str], Field(example="password", min_length=8)]
+    full_name: Optional[str]
+    home_longitude: float
+    home_latitude: float

@@ -14,17 +14,17 @@ router = APIRouter()
 
 
 @router.get("/", response_model=UserFullSchema)
-async def get_my_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
 @router.delete("/")
-async def delete_user(current_user: User = Depends(get_current_user)) -> None:
+async def delete_me(current_user: User = Depends(get_current_user)) -> None:
     current_user.delete()
 
 
 @router.patch("/", response_model=UserFullSchema)
-async def update_user(
+async def update_me(
     user_in: UpdateUserSchema, current_user: User = Depends(get_current_user)
 ) -> User:
     if user_in.email:
@@ -45,6 +45,10 @@ async def update_user(
             )
     if user_in.password:
         current_user.password = user_in.password
+    if user_in.full_name:
+        current_user.full_name = user_in.full_name
+    if user_in.home_longitude and user_in.home_latitude:
+        current_user.set_home(user_in.home_longitude, user_in.home_latitude)
 
     current_user.save()
     return current_user

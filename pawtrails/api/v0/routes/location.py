@@ -8,6 +8,10 @@ from pawtrails.models.location import (
     AddLocationSchema,
     Location,
     LocationSchema,
+    SearchLocationDistanceOptions,
+    SearchLocationOptions,
+    SearchLocationSchema,
+    SearchLocationUserOptions,
     UpdateLocationSchema,
 )
 from pawtrails.models.review import (
@@ -16,7 +20,7 @@ from pawtrails.models.review import (
     ReviewSchema,
     UpdateReviewSchema,
 )
-from pawtrails.models.user import User
+from pawtrails.models.user import User, UserSchema
 
 router = APIRouter()
 
@@ -30,8 +34,25 @@ async def _check_ownership(user: User, loc: Location) -> None:
 
 
 @router.get("/", response_model=List[LocationSchema])
-async def get_locations(skip: int = 0, limit: int = 100) -> List[Location]:
-    return Location.get_all(skip, limit)
+async def get_locations(
+    search_in: SearchLocationSchema,
+    current_user: User = Depends(get_current_active_user),
+) -> List[Location]:
+    params = SearchLocationOptions(**search_in.dict())
+    if search_in.created or search_in.favorited:
+        params.user = SearchLocationUserOptions(
+            uuid=current_user.uuid,
+            created=search_in.created,
+            favorited=search_in.favorited,
+        )
+    if search_in.longitude and search_in.latitude and search_in.max_distance:
+        params.distance = SearchLocationDistanceOptions(
+            longitude=search_in.longitude,
+            latitude=search_in.latitude,
+            max=search_in.max_distance,
+        )
+
+    return Location.search(params)
 
 
 @router.post("/", response_model=LocationSchema)
@@ -75,6 +96,31 @@ async def update_location(
     loc.update(**loc_in.dict())
     loc.save()
     return loc
+
+
+@router.get("/{uuid}/favorite", response_model=List[UserSchema])
+async def get_location_favorites(uuid: str) -> List[User]:
+    loc = await get_location(uuid)
+    return loc.favorites
+
+
+@router.post("/{uuid}/favorite", response_model=UserSchema)
+async def add_favorite(
+    uuid: str, current_user: User = Depends(get_current_active_user)
+) -> User:
+    loc = await get_location(uuid)
+    current_user.add_favorite(loc)
+    current_user.save()
+    return current_user
+
+
+@router.delete("/{uuid}/favorite", response_model=None)
+async def remove_favorite(
+    uuid: str, current_user: User = Depends(get_current_active_user)
+) -> None:
+    loc = await get_location(uuid)
+    current_user.remove_favorite(loc)
+    current_user.save()
 
 
 @router.get("/{uuid}/review", response_model=List[ReviewSchema])

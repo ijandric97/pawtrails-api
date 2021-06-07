@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from neotime import DateTime
 from py2neo.data.spatial import WGS84Point
@@ -8,7 +8,12 @@ from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 from pydantic.fields import Field
 
-from pawtrails.core.database import BaseModel, BaseSchema
+from pawtrails.core.database import BaseModel, BaseSchema, graph
+from pawtrails.models.constants import (
+    AllowedLocationSizes,
+    AllowedLocationTypes,
+    AllowedReviewGrades,
+)
 from pawtrails.models.tag import TagSchema
 from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
@@ -17,31 +22,6 @@ if TYPE_CHECKING:
     from pawtrails.models.review import Review
     from pawtrails.models.tag import Tag
     from pawtrails.models.user import User
-
-AllowedLocationTypes = Literal[
-    "Park",
-    "park",
-    "Meadow",
-    "meadow",
-    "Fenced meadow",
-    "fenced meadow",
-    "Beach",
-    "beach",
-    "Other",
-    "other",
-]
-AllowedLocationSizes = Literal[
-    "Mini",
-    "mini",
-    "Small",
-    "small",
-    "Medium",
-    "medium",
-    "Large",
-    "large",
-    "Giant",
-    "giant",
-]
 
 
 class Location(BaseModel):
@@ -55,6 +35,45 @@ class Location(BaseModel):
     _tags = RelatedTo("pawtrails.models.tag.Tag", "TAGGED_AS")
     _favorites = RelatedFrom("pawtrails.models.user.User", "FAVORITED")
     _reviews = RelatedFrom("pawtrails.models.review.Review", "FOR")
+
+    @classmethod
+    def search(cls, params: SearchLocationOptions) -> List[Location]:
+        query: str = f'MATCH (l:Location) WHERE l.name CONTAINS "{params.name}"'
+        if params.size:
+            query += f' AND l.size = "{params.size.lower()}"'
+        if params.type:
+            query += f' AND l.type = "{params.type.lower()}"'
+        if params.user:
+            query += (
+                "\nWITH l"
+                f'\nMATCH (u:User {{ uuid: "{params.user.uuid}" }})'
+                "\nWITH u, l"
+            )
+            if params.user.created:
+                query += "\nMATCH (u)-[:CREATED]->(l)"
+            if params.user.favorited:
+                query += "\nMATCH (u)-[:FAVORITED]->(l)"
+        if params.grade:
+            query += (
+                "\nWITH l"
+                "\nMATCH (l)<-[:FOR]-(r:Review)"
+                "\nWITH l, avg(r.grade) AS grade"
+                f"\nWHERE grade >= {params.grade}"
+            )
+        if params.distance:
+            query += (
+                f"\nWITH l, distance(point({{longitude: {params.distance.longitude},"
+                f" latitude: {params.distance.latitude}}}), l.location)/1000 AS dist"
+                f"\nWHERE dist <= {params.distance.max}"
+            )
+        query += f"\nRETURN l SKIP {params.skip} LIMIT {params.limit}"
+        print(query, flush=True)
+
+        locs: List[Location] = []
+        for record in graph.run(query):
+            locs.append(Location.wrap(record["l"]))
+
+        return locs
 
     @property
     def type(self) -> AllowedLocationTypes:
@@ -152,6 +171,17 @@ class Location(BaseModel):
     def reviews(self) -> List[Review]:
         return [review for review in self._reviews]
 
+    @property
+    def grade(self) -> float:
+        i = 0
+        sum = 0
+        for review in self._reviews:
+            i += 1
+            sum += review.grade
+        if i <= 0 or sum <= 0:
+            return 0
+        return sum / i
+
     @override
     def save(self) -> None:
         if not self.name:
@@ -171,6 +201,8 @@ class LocationSchema(BaseSchema):
     type: AllowedLocationTypes
     size: AllowedLocationSizes
     location: Dict[str, float] = Field(example="longitude, latitude")
+    creator: UserSchema
+    grade: float
 
 
 class FullLocationSchema(LocationSchema):
@@ -193,3 +225,45 @@ class UpdateLocationSchema(Schema):
     type: Optional[AllowedLocationTypes]
     size: Optional[AllowedLocationSizes]
     location: Optional[Tuple[float, float]] = Field(example="45, 45")
+
+
+class SearchLocationUserOptions(Schema):
+    uuid: str
+    created: bool
+    favorited: bool
+
+
+class SearchLocationDistanceOptions(Schema):
+    longitude: float
+    latitude: float
+    max: float
+
+
+class SearchLocationOptions(Schema):
+    user: Optional[SearchLocationUserOptions]
+    name: Optional[str] = ""
+    size: Optional[AllowedLocationSizes]
+    type: Optional[AllowedLocationTypes]
+    grade: Optional[AllowedReviewGrades]
+    distance: Optional[SearchLocationDistanceOptions]
+    skip: Optional[int] = 0
+    limit: Optional[int] = 100
+
+
+class SearchLocationSchema(Schema):
+    created: Optional[bool]
+    favorited: Optional[bool]
+    name: Optional[str] = ""
+    size: Optional[AllowedLocationSizes]
+    type: Optional[AllowedLocationTypes]
+    grade: Optional[AllowedReviewGrades]
+    longitude: Optional[float]
+    latitude: Optional[float]
+    max_distance: Optional[float]
+    skip: Optional[int] = 0
+    limit: Optional[int] = 100
+
+
+class Point(Schema):
+    longitude: float
+    latitude: float

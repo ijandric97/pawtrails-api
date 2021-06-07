@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom
@@ -9,25 +9,12 @@ from pydantic import Field
 from typing_extensions import Annotated
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.models.constants import AllowedPetEnergies, AllowedPetSizes
 from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
 
 if TYPE_CHECKING:
     from pawtrails.models.user import User
-
-AllowedPetEnergies = Literal[1, 2, 3, 4, 5]
-AllowedPetSizes = Literal[
-    "Mini",
-    "mini",
-    "Small",
-    "small",
-    "Medium",
-    "medium",
-    "Large",
-    "large",
-    "Giant",
-    "giant",
-]
 
 
 class Pet(BaseModel):

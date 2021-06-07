@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from neotime import DateTime
 from py2neo.ogm import Property, RelatedFrom, RelatedTo
 from pydantic import BaseModel as Schema
 
 from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.models.constants import AllowedReviewGrades
 from pawtrails.models.location import LocationSchema
 from pawtrails.models.user import UserSchema
 from pawtrails.utils import is_allowed_literal, override
@@ -14,8 +15,6 @@ from pawtrails.utils import is_allowed_literal, override
 if TYPE_CHECKING:
     from pawtrails.models.location import Location
     from pawtrails.models.user import User
-
-AllowedReviewGrades = Literal[1, 2, 3, 4, 5]
 
 
 class Review(BaseModel):
@@ -101,6 +100,7 @@ class Review(BaseModel):
 class ReviewSchema(BaseSchema):
     comment: str
     grade: AllowedReviewGrades
+    writer: UserSchema
 
 
 class FullReviewSchema(BaseSchema):

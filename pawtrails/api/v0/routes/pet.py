@@ -20,7 +20,7 @@ async def _check_ownership(user: User, pet: Pet) -> None:
 
 
 @router.get("/", response_model=List[PetSchema])
-async def get_pet_list() -> List[Pet]:
+async def get_all_pets() -> List[Pet]:
     return Pet.get_all()
 
 
