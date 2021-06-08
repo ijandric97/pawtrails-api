@@ -151,7 +151,7 @@ class User(BaseModel):
 
     @property
     def favorites(self) -> List[Location]:
-        return self._favorites
+        return [location for location in self._favorites]
 
     def add_favorite(self, location: Location) -> bool:
         if location in self._favorites:
