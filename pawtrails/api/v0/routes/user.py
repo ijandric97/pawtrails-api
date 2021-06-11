@@ -5,7 +5,7 @@ from fastapi.exceptions import HTTPException
 
 from pawtrails.models.location import Location, LocationSchema
 from pawtrails.models.pet import Pet, PetSchema
-from pawtrails.models.review import Review, ReviewSchema
+from pawtrails.models.review import Review, UserReviewSchema
 from pawtrails.models.user import User, UserSchema
 
 router = APIRouter()
@@ -58,7 +58,7 @@ async def get_favorites_by_uuid(uuid: str) -> List[Location]:
     return user.favorites
 
 
-@router.get("/{uuid}/reviews", response_model=List[ReviewSchema])
+@router.get("/{uuid}/reviews", response_model=List[UserReviewSchema])
 async def get_reviews_by_uuid(uuid: str) -> List[Review]:
     user = await get_user_by_uuid(uuid)
     return user.reviews

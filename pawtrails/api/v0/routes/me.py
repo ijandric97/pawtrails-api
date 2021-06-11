@@ -7,7 +7,7 @@ from pawtrails.api.deps import get_current_active_user, get_current_user
 from pawtrails.api.v0.routes.user import get_user_by_uuid
 from pawtrails.models.location import Location, LocationSchema
 from pawtrails.models.pet import Pet, PetSchema
-from pawtrails.models.review import Review, ReviewSchema
+from pawtrails.models.review import Review, UserReviewSchema
 from pawtrails.models.user import UpdateUserSchema, User, UserFullSchema, UserSchema
 
 router = APIRouter()
@@ -117,7 +117,7 @@ async def get_favorites(
     return current_user.favorites
 
 
-@router.get("/reviews", response_model=List[ReviewSchema])
+@router.get("/reviews", response_model=List[UserReviewSchema])
 async def get_reviews(
     current_user: User = Depends(get_current_user),
 ) -> List[Review]:

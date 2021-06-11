@@ -103,6 +103,12 @@ class ReviewSchema(BaseSchema):
     writer: UserSchema
 
 
+class UserReviewSchema(BaseSchema):
+    comment: str
+    grade: AllowedReviewGrades
+    location: LocationSchema
+
+
 class FullReviewSchema(BaseSchema):
     writer: Optional[UserSchema]
     location: Optional[LocationSchema]
