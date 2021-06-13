@@ -38,7 +38,10 @@ class Location(BaseModel):
 
     @classmethod
     def search(cls, params: SearchLocationOptions) -> List[Location]:
-        query: str = f'MATCH (l:Location) WHERE l.name CONTAINS "{params.name}"'
+        query: str = (
+            "MATCH (l:Location)"
+            f'\nWHERE toLower(l.name) CONTAINS toLower("{params.name}")'
+        )
         if params.size:
             query += f' AND l.size = "{params.size.lower()}"'
         if params.type:
