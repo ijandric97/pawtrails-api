@@ -14,7 +14,7 @@ class Token(Schema):
 
 
 class TokenData(Schema):
-    email: Optional[str] = None
+    uuid: str = ""
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

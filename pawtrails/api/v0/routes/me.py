@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 
 from pawtrails.api.deps import get_current_active_user, get_current_user
 from pawtrails.api.v0.routes.user import get_user_by_uuid
+from pawtrails.core.security import verify_password
 from pawtrails.models.location import Location, LocationSchema
 from pawtrails.models.pet import Pet, PetSchema
 from pawtrails.models.review import Review, UserReviewSchema
@@ -44,7 +45,15 @@ async def update_me(
                 detail="The user with this username already exists in our system.",
             )
     if user_in.password:
-        current_user.password = user_in.password
+        if user_in.old_password and verify_password(
+            user_in.old_password, current_user.password
+        ):
+            current_user.password = user_in.password
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Old password not provided or does not match the current one.",
+            )
     if user_in.full_name:
         current_user.full_name = user_in.full_name
     if user_in.home_longitude and user_in.home_latitude:

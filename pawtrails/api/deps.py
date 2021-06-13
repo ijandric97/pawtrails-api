@@ -15,14 +15,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
         payload = jwt.decode(
             token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
-        token_data = TokenData(email=payload.get("sub"))
+        token_data = TokenData(uuid=payload.get("sub"))
     except (JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = User.get_by_email(email=token_data.email)
+    user = User.get_by_uuid(uuid=token_data.uuid)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"

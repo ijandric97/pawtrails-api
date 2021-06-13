@@ -217,6 +217,7 @@ class UpdateUserSchema(Schema):
     email: Optional[EmailStr] = Field(example="user@example.com")
     username: Annotated[Optional[str], Field(example="user", min_length=3)]
     password: Annotated[Optional[str], Field(example="password", min_length=8)]
+    old_password: Annotated[Optional[str], Field(example="password", min_length=8)]
     full_name: Optional[str]
-    home_longitude: float
-    home_latitude: float
+    home_longitude: Optional[float]
+    home_latitude: Optional[float]
