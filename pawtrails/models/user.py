@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import operator
+import textwrap
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
@@ -11,7 +13,7 @@ from pydantic import EmailStr
 from pydantic.fields import Field
 from typing_extensions import Annotated
 
-from pawtrails.core.database import BaseModel, BaseSchema, repository
+from pawtrails.core.database import BaseModel, BaseSchema, graph, repository
 from pawtrails.core.security import get_password_hash, verify_password
 
 if TYPE_CHECKING:
@@ -188,6 +190,140 @@ class User(BaseModel):
         return [review for review in self._reviews]
 
     # TODO: Add a save checking function
+    def get_dashboard(self) -> List[DashboardSchema]:
+        my_query: str = f'MATCH (me:User {{ uuid: "{self._uuid}" }})\n'
+        my_query += textwrap.dedent(
+            """
+            MATCH (me)-[owns:OWNS]-(pet:Pet)
+            WITH me, pet.name as mpn,
+            owns.created_at as mpt, pet.uuid as mpu
+
+            MATCH (me)-[created:CREATED]->(loc:Location)
+            WITH me, mpn, mpt, mpu, loc.name as mln,
+            created.created_at as mlt, loc.uuid as mlu
+
+            MATCH (me)-[favorited:FAVORITED]->(fav_loc:Location)
+            WITH me, mpn, mpt, mpu, mln, mlt, mlu,
+            fav_loc.name as mfn, favorited.created_at as mft, fav_loc.uuid as mfu
+
+            MATCH (me)-[wrote:WROTE]-(review:Review)-[:FOR]->(rew_loc:Location)
+            WITH me, mpn, mpt, mpu, mln, mlt, mlu, mfn, mft, mfu,
+            rew_loc.name as mrn, wrote.created_at as mrt, rew_loc.uuid as mru
+
+            RETURN
+            collect(DISTINCT {
+                user: me.username,
+                action: "created",
+                label: "pet",
+                name: mpn,
+                time: mpt,
+                uuid: mpu
+            }) as my_pets,
+            collect(DISTINCT {
+                user: me.username,
+                action: "reviewed",
+                label: "location",
+                name: mrn,
+                time: mrt,
+                uuid: mru
+            }) as my_reviews,
+            collect(DISTINCT {
+                user: me.username,
+                action: "created",
+                label: "location",
+                name: mln,
+                time: mlt,
+                uuid: mlu
+            }) as my_locations,
+            collect(DISTINCT {
+                user: me.username,
+                action: "favorited",
+                label: "location",
+                name: mfn,
+                time: mft,
+                uuid: mfu
+            }) as my_fav_locations"""
+        )
+        user_query: str = (
+            f'\nMATCH (:User {{ uuid: "{self._uuid}" }})-[:FOLLOWS]->(user:User)\n'
+        )
+        user_query += textwrap.dedent(
+            """
+            MATCH (user)-[owns:OWNS]-(pet:Pet)
+            WITH user, pet.name as mpn,
+            owns.created_at as mpt, pet.uuid as mpu
+
+            MATCH (user)-[created:CREATED]->(loc:Location)
+            WITH user, mpn, mpt, mpu, loc.name as mln,
+            created.created_at as mlt, loc.uuid as mlu
+
+            MATCH (user)-[favorited:FAVORITED]->(fav_loc:Location)
+            WITH user, mpn, mpt, mpu, mln, mlt, mlu,
+            fav_loc.name as mfn, favorited.created_at as mft, fav_loc.uuid as mfu
+
+            MATCH (user)-[wrote:WROTE]-(review:Review)-[:FOR]->(rew_loc:Location)
+            WITH user, mpn, mpt, mpu, mln, mlt, mlu, mfn, mft, mfu,
+            rew_loc.name as mrn, wrote.created_at as mrt, rew_loc.uuid as mru
+
+            RETURN
+            collect(DISTINCT {
+                user: user.username,
+                action: "created",
+                label: "pet",
+                name: mpn,
+                time: mpt,
+                uuid: mpu
+            }) as pets,
+            collect(DISTINCT {
+                user: user.username,
+                action: "reviewed",
+                label: "location",
+                name: mrn,
+                time: mrt,
+                uuid: mru
+            }) as reviews,
+            collect(DISTINCT {
+                user: user.username,
+                action: "created",
+                label: "location",
+                name: mln,
+                time: mlt,
+                uuid: mlu
+            }) as locations,
+            collect(DISTINCT {
+                user: user.username,
+                action: "favorited",
+                label: "location",
+                name: mfn,
+                time: mft,
+                uuid: mfu
+            }) as fav_locations
+            """
+        )
+
+        updates: List[DashboardSchema] = []
+
+        def iterate_records(query: str, updates: list) -> None:
+            for records in graph.run(query):
+                for subrecords in records:
+                    for update in subrecords:
+                        updates.append(
+                            DashboardSchema(
+                                user=update["name"],
+                                action=update["action"],
+                                label=update["label"],
+                                name=update["name"],
+                                time=str(update["time"]),
+                                uuid=update["uuid"],
+                            )
+                        )
+
+        iterate_records(my_query, updates)
+        iterate_records(user_query, updates)
+
+        updates.sort(key=operator.attrgetter("time"), reverse=True)
+
+        return updates
 
 
 class UserSchema(BaseSchema):
@@ -221,3 +357,12 @@ class UpdateUserSchema(Schema):
     full_name: Optional[str]
     home_longitude: Optional[float]
     home_latitude: Optional[float]
+
+
+class DashboardSchema(Schema):
+    user: str = ""
+    action: str = ""
+    label: str = ""
+    name: str = ""
+    time: str = ""
+    uuid: str = ""

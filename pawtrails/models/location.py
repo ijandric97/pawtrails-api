@@ -70,7 +70,7 @@ class Location(BaseModel):
                 f"\nWHERE dist <= {params.distance.max}"
             )
         query += f"\nRETURN l SKIP {params.skip} LIMIT {params.limit}"
-        print(query, flush=True)
+        # print(query, flush=True)
 
         locs: List[Location] = []
         for record in graph.run(query):

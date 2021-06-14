@@ -9,7 +9,13 @@ from pawtrails.core.security import verify_password
 from pawtrails.models.location import Location, LocationSchema
 from pawtrails.models.pet import Pet, PetSchema
 from pawtrails.models.review import Review, UserReviewSchema
-from pawtrails.models.user import UpdateUserSchema, User, UserFullSchema, UserSchema
+from pawtrails.models.user import (
+    DashboardSchema,
+    UpdateUserSchema,
+    User,
+    UserFullSchema,
+    UserSchema,
+)
 
 router = APIRouter()
 
@@ -61,6 +67,13 @@ async def update_me(
 
     current_user.save()
     return current_user
+
+
+@router.get("/dashboard", response_model=List[DashboardSchema])
+async def dashboard(
+    current_user: User = Depends(get_current_active_user),
+) -> List[DashboardSchema]:
+    return current_user.get_dashboard()
 
 
 @router.post("/follow", response_model=UserSchema)
