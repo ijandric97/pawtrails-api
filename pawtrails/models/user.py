@@ -213,6 +213,7 @@ class User(BaseModel):
             RETURN
             collect(DISTINCT {
                 user: "You",
+                user_uuid: me.uuid,
                 action: "created",
                 label: "pet",
                 name: mpn,
@@ -221,6 +222,7 @@ class User(BaseModel):
             }) as my_pets,
             collect(DISTINCT {
                 user: "You",
+                user_uuid: me.uuid,
                 action: "reviewed",
                 label: "location",
                 name: mrn,
@@ -229,6 +231,7 @@ class User(BaseModel):
             }) as my_reviews,
             collect(DISTINCT {
                 user: "You",
+                user_uuid: me.uuid,
                 action: "created",
                 label: "location",
                 name: mln,
@@ -237,6 +240,7 @@ class User(BaseModel):
             }) as my_locations,
             collect(DISTINCT {
                 user: "You",
+                user_uuid: me.uuid,
                 action: "favorited",
                 label: "location",
                 name: mfn,
@@ -268,6 +272,7 @@ class User(BaseModel):
             RETURN
             collect(DISTINCT {
                 user: user.username,
+                user_uuid: user.uuid,
                 action: "created",
                 label: "pet",
                 name: mpn,
@@ -276,6 +281,7 @@ class User(BaseModel):
             }) as pets,
             collect(DISTINCT {
                 user: user.username,
+                user_uuid: user.uuid,
                 action: "reviewed",
                 label: "location",
                 name: mrn,
@@ -284,6 +290,7 @@ class User(BaseModel):
             }) as reviews,
             collect(DISTINCT {
                 user: user.username,
+                user_uuid: user.uuid,
                 action: "created",
                 label: "location",
                 name: mln,
@@ -292,6 +299,7 @@ class User(BaseModel):
             }) as locations,
             collect(DISTINCT {
                 user: user.username,
+                user_uuid: user.uuid,
                 action: "favorited",
                 label: "location",
                 name: mfn,
@@ -310,6 +318,7 @@ class User(BaseModel):
                         updates.append(
                             DashboardSchema(
                                 user=update["user"],
+                                user_uuid=update["user_uuid"],
                                 action=update["action"],
                                 label=update["label"],
                                 name=update["name"],
@@ -361,6 +370,7 @@ class UpdateUserSchema(Schema):
 
 class DashboardSchema(Schema):
     user: str = ""
+    user_uuid: str = ""
     action: str = ""
     label: str = ""
     name: str = ""
