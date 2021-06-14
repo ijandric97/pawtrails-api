@@ -212,7 +212,7 @@ class User(BaseModel):
 
             RETURN
             collect(DISTINCT {
-                user: me.username,
+                user: "You",
                 action: "created",
                 label: "pet",
                 name: mpn,
@@ -220,7 +220,7 @@ class User(BaseModel):
                 uuid: mpu
             }) as my_pets,
             collect(DISTINCT {
-                user: me.username,
+                user: "You",
                 action: "reviewed",
                 label: "location",
                 name: mrn,
@@ -228,7 +228,7 @@ class User(BaseModel):
                 uuid: mru
             }) as my_reviews,
             collect(DISTINCT {
-                user: me.username,
+                user: "You",
                 action: "created",
                 label: "location",
                 name: mln,
@@ -236,7 +236,7 @@ class User(BaseModel):
                 uuid: mlu
             }) as my_locations,
             collect(DISTINCT {
-                user: me.username,
+                user: "You",
                 action: "favorited",
                 label: "location",
                 name: mfn,
@@ -309,7 +309,7 @@ class User(BaseModel):
                     for update in subrecords:
                         updates.append(
                             DashboardSchema(
-                                user=update["name"],
+                                user=update["user"],
                                 action=update["action"],
                                 label=update["label"],
                                 name=update["name"],
