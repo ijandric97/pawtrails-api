@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 async def _check_ownership(user: User, loc: Location) -> None:
-    if user not in loc.creator:
+    if user != loc.creator:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"This user {user.username} did not create this location!",
@@ -152,15 +152,15 @@ async def add_review(
 async def get_review(uuid: str, review_uuid: str) -> Review:
     loc = await get_location(uuid)  # noqa
     rew = cast(Review, Review.get_by_uuid(review_uuid))
-    if loc not in rew.location:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This review does not belong to this location!",
-        )
     if not rew:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"The location with the uuid {uuid} does not exist!",
+        )
+    if loc != rew.location:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This review does not belong to this location!",
         )
     return rew
 
@@ -172,7 +172,7 @@ async def remove_review(
     current_user: User = Depends(get_current_active_user),
 ) -> None:
     rew = await get_review(uuid, review_uuid)
-    if current_user not in rew.writer:
+    if current_user != rew.writer:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You did not create this review!",
@@ -188,7 +188,7 @@ async def update_review(
     current_user: User = Depends(get_current_active_user),
 ) -> Review:
     rew = await get_review(uuid, review_uuid)
-    if current_user not in rew.writer:
+    if current_user != rew.writer:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You did not create this review!",
