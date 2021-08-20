@@ -18,13 +18,12 @@ COPY poetry.lock .
 RUN poetry install --no-dev
 
 # Copy the application
-WORKDIR /app
-COPY . /app
-# COPY ./app /app
+WORKDIR /pawtrails
+COPY . /pawtrails
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+# Creates a non-root user with an explicit UID and adds permission to access the /pawtrails folder
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /pawtrails
 USER appuser
 
 # During debugging, this entry point will be overridden.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "app.main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "pawtrails.main:app"]

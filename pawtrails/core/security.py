@@ -3,18 +3,18 @@ from typing import Any, Optional, Union
 
 from jose import jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from pydantic import BaseModel as Schema
 
-from app.core.settings import settings
+from pawtrails.core.settings import settings
 
 
-class Token(BaseModel):
+class Token(Schema):
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
-    email: Optional[str] = None
+class TokenData(Schema):
+    uuid: str = ""
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

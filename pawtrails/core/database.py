@@ -1,24 +1,27 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
+from uuid import uuid4
 
 import jsonpickle
 from neotime import DateTime
-from py2neo import Graph  # noqa
+from py2neo import Graph
 from py2neo.ogm import Model, Property, Repository
+from pydantic import BaseModel as Schema
+from pydantic import Field
 
-from app.core.settings import settings
+from pawtrails.core.settings import settings
 
-graph = Repository(
+graph = Graph(
     host=settings.NEO4J_HOST,
-    auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+    auth=(settings.NEO4J_USER, settings.NEO4J_PASS),
     name=settings.NEO4J_GRAPH_NAME,
 )
 
 repository = Repository(
     host=settings.NEO4J_HOST,
-    auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD),
+    auth=(settings.NEO4J_USER, settings.NEO4J_PASS),
     name=settings.NEO4J_GRAPH_NAME,
 )
 
@@ -28,27 +31,49 @@ class BaseModel(Model):
     methods. Additionaly contains automatic created and updated timestamp on save.
     """
 
+    __primarykey__ = "uuid"
+
+    _uuid = Property(key="uuid")
     _created_at = Property(key="created_at")
     _updated_at = Property(key="updated_at", default=DateTime.utc_now())
 
-    def __init__(self, **kwargs: dict) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize a Neo4J Model
 
         Args:
             kwargs (dict): A list of fields to initialize with
         """
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+        self.update(**kwargs)
 
     @classmethod
-    def get_all(cls) -> Optional[List[BaseModel]]:
+    def get_by_uuid(cls, uuid: str) -> BaseModel:
+        """Returns a node that matches the UUID4 hex string.
+
+        Args:
+            uuid (str): An UUID4 hex string
+
+        Returns:
+            BaseModel: Node with matching uuid
+        """
+        return cls.match(repository).where(uuid=uuid).first()
+
+    @classmethod
+    def get_all(cls, skip: int = 0, limit: int = 100) -> List[BaseModel]:
         """Returns all nodes of this Model from the database
 
         Returns:
             Optional[List[Model]]: List of Nodes with this Model type
         """
-        return cls.match(repository)
+        return [model for model in cls.match(repository).skip(skip).limit(limit).all()]
+
+    @property
+    def uuid(self) -> Optional[str]:
+        """Returns the UUID4 hex string that represents a unique id of this object.
+
+        Returns:
+            Optional[str]: UUID4 hex string
+        """
+        return self._uuid
 
     @property
     def created_at(self) -> Optional[datetime]:
@@ -72,11 +97,24 @@ class BaseModel(Model):
             return self._updated_at.to_native()
         return None
 
+    def update(self, **kwargs: Any) -> None:
+        """Updates a Neo4J Model with specified dict
+
+        Args:
+            kwargs (dict): A list of fields to update with
+        """
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
     def save(self) -> None:
         """Save the Neo4j Model Object"""
+        current_time = DateTime.utc_now()
+        if not self._uuid:
+            self._uuid = uuid4().hex
         if not self._created_at:
-            self._created_at = DateTime.utc_now()
-        self._updated_at = DateTime.utc_now()
+            self._created_at = current_time
+        self._updated_at = current_time
         repository.save(self)
 
     def delete(self) -> None:
@@ -90,3 +128,15 @@ class BaseModel(Model):
             str: JSON representation of this Neo4j Model
         """
         return jsonpickle.encode(self, unpicklable=False)
+
+
+class BaseSchema(Schema):
+    """A Pydantic schema model that matches the py2Neo OGM BaseModel described above.
+    By default orm_mode is set to True."""
+
+    uuid: Optional[str] = Field(example="12345678-1234-1234-1234-123456789abc")
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True

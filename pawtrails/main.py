@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.v0.api import api_router
-from app.core.settings import settings
+from pawtrails.api.v0.api import api_router
+from pawtrails.core.settings import settings
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -23,6 +23,12 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_PREFIX)
+
+
+@app.get("/healthcheck", status_code=200)
+async def healthcheck() -> str:
+    return "OK"
+
 
 # This line is necessary for debugging the application using VSCode
 if __name__ == "__main__":

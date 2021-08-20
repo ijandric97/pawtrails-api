@@ -24,7 +24,7 @@ $ poetry install
 3. Run application using Uvicorn ASGI
 
 ```
-$ uvicorn app.main:app --reload
+$ uvicorn pawtrails.main:app --reload
 ```
 > If you are using WSL2 please ensure that you have localhostForwarding=true in your .wslconfig file. If uvicorn still does not start, restart the WSL2.
 
@@ -84,8 +84,5 @@ $ git commit -m "Bypassing pre-commit hooks" --no-verify
 > Please do not skip pre-commit hooks :)
 
 ## TODO
-Investigate mypy and type-hints
-Poetry supports scripts... add them :)
 Write better documentation
-Pydantic config is connected to env
-Deploy to AWS
+Connect ECS deployment to CodePipeline

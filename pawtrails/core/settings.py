@@ -1,10 +1,10 @@
 import secrets
 from typing import List, Union
 
+from dotenv import load_dotenv
 from pydantic import AnyHttpUrl, BaseSettings, validator
 
 
-# TODO: Connect this with .env file, check Pydantic documentation
 class Settings(BaseSettings):
     # Project RELATED
     APP_TITLE: str = "PawTrails"
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # Neo4j
     NEO4J_HOST: str = "pawtrails_neo4j"
     NEO4J_USER: str = "neo4j"
-    NEO4J_PASSWORD: str = "test"
+    NEO4J_PASS: str = "test"
     NEO4J_GRAPH_NAME: str = "pawtrails"
 
     # SERVER_NAME: str
@@ -43,4 +43,5 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+load_dotenv(".env")
 settings = Settings()
