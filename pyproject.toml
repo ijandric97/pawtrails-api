@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "Pawtrails"
+version = "0.1.0"
+description = "Web API for the Pawtrails application."
+authors = [
+    "Ivan Jandrić <ijandric97@gmail.com>",
+    "Igor Vukas <ivukas14@gmail.com>",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+uvicorn = {version = "^0.13.4", extras = ["standard"]}
+fastapi = "^0.63.0"
+python-jose = { version = "^3.2.0", extras = ["cryptography"] }
+passlib = { version = "^1.7.4", extras = ["bcrypt"] }
+py2neo = "^2021.1.1"
+jsonpickle = "^2.0.0"
+pydantic = { version = "^1.8.1", extras = ["email"] }
+python-multipart = "^0.0.5"
+gunicorn = "^20.1.0"
+python-dotenv = "^0.17.1"
+pytest = "^6.2.4"
+pytest-cov = "^2.12.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.9.1"
+black = "^21.5b0"
+isort = "^5.8.0"
+mypy = "^0.812"
+pre-commit = "^2.12.1"
+
+[tool.poetry.scripts]
+db_prune = "pawtrails.scripts.database:prune"
+db_seed = "pawtrails.scripts.database:seed"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+
+[tool.black]
+line_length = 88
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
