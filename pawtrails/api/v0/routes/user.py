@@ -3,20 +3,20 @@ from typing import List
 from fastapi import APIRouter, status
 from fastapi.exceptions import HTTPException
 
-from pawtrails.models.location import Location, LocationSchema
-from pawtrails.models.pet import Pet, PetSchema
+from pawtrails.models.location import Location
+from pawtrails.models.pet import Pet
 from pawtrails.models.review import Review, UserReviewSchema
-from pawtrails.models.user import User, UserSchema
+from pawtrails.models.user import User
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[UserSchema])
+@router.get("/", response_model=List[User])
 async def get_user_list(skip: int = 0, limit: int = 100) -> List[User]:
     return User.get_all(skip, limit)
 
 
-@router.get("/{uuid}", response_model=UserSchema)
+@router.get("/{uuid}", response_model=User)
 async def get_user_by_uuid(uuid: str) -> User:
     user = User.get_by_uuid(uuid)
     if not user:
@@ -28,31 +28,31 @@ async def get_user_by_uuid(uuid: str) -> User:
     return user
 
 
-@router.get("/{uuid}/followers", response_model=List[UserSchema])
+@router.get("/{uuid}/followers", response_model=List[User])
 async def get_followers_by_uuid(uuid: str) -> List[User]:
     user = await get_user_by_uuid(uuid)
     return user.followers
 
 
-@router.get("/{uuid}/following", response_model=List[UserSchema])
+@router.get("/{uuid}/following", response_model=List[User])
 async def get_following_by_uuid(uuid: str) -> List[User]:
     user = await get_user_by_uuid(uuid)
     return user.following
 
 
-@router.get("/{uuid}/pets", response_model=List[PetSchema])
+@router.get("/{uuid}/pets", response_model=List[Pet])
 async def get_pets_by_uuid(uuid: str) -> List[Pet]:
     user = await get_user_by_uuid(uuid)  # NOTE: coroutines have to be awaited
     return user.pets
 
 
-@router.get("/{uuid}/locations", response_model=List[LocationSchema])
+@router.get("/{uuid}/locations", response_model=List[Location])
 async def get_locations_by_uuid(uuid: str) -> List[Location]:
     user = await get_user_by_uuid(uuid)
     return user.locations
 
 
-@router.get("/{uuid}/favorites", response_model=List[LocationSchema])
+@router.get("/{uuid}/favorites", response_model=List[Location])
 async def get_favorites_by_uuid(uuid: str) -> List[Location]:
     user = await get_user_by_uuid(uuid)
     return user.favorites

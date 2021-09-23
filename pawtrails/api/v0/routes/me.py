@@ -6,15 +6,14 @@ from fastapi.exceptions import HTTPException
 from pawtrails.api.deps import get_current_active_user, get_current_user
 from pawtrails.api.v0.routes.user import get_user_by_uuid
 from pawtrails.core.security import verify_password
-from pawtrails.models.location import Location, LocationSchema
-from pawtrails.models.pet import Pet, PetSchema
+from pawtrails.models.location import Location
+from pawtrails.models.pet import Pet
 from pawtrails.models.review import Review, UserReviewSchema
 from pawtrails.models.user import (
     DashboardSchema,
     UpdateUserSchema,
     User,
     UserFullSchema,
-    UserSchema,
 )
 
 router = APIRouter()
@@ -76,7 +75,7 @@ async def dashboard(
     return current_user.get_dashboard()
 
 
-@router.post("/follow", response_model=UserSchema)
+@router.post("/follow", response_model=User)
 async def follow_user(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> User:
@@ -106,33 +105,33 @@ async def unfollow_user(
     return None
 
 
-@router.get("/followers", response_model=List[UserSchema])
+@router.get("/followers", response_model=List[User])
 async def get_followers(
     current_user: User = Depends(get_current_active_user),
 ) -> List[User]:
     return current_user.followers
 
 
-@router.get("/following", response_model=List[UserSchema])
+@router.get("/following", response_model=List[User])
 async def get_following(
     current_user: User = Depends(get_current_active_user),
 ) -> List[User]:
     return current_user.following
 
 
-@router.get("/pets", response_model=List[PetSchema])
+@router.get("/pets", response_model=List[Pet])
 async def get_pets(current_user: User = Depends(get_current_user)) -> List[Pet]:
     return current_user.pets
 
 
-@router.get("/locations", response_model=List[LocationSchema])
+@router.get("/locations", response_model=List[Location])
 async def get_locations(
     current_user: User = Depends(get_current_user),
 ) -> List[Location]:
     return current_user.locations
 
 
-@router.get("/favorites", response_model=List[LocationSchema])
+@router.get("/favorites", response_model=List[Location])
 async def get_favorites(
     current_user: User = Depends(get_current_user),
 ) -> List[Location]:

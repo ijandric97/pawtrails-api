@@ -7,20 +7,14 @@ from pawtrails.api.deps import get_current_active_user
 from pawtrails.models.location import (
     AddLocationSchema,
     Location,
-    LocationSchema,
     SearchLocationDistanceOptions,
     SearchLocationOptions,
     SearchLocationSchema,
     SearchLocationUserOptions,
     UpdateLocationSchema,
 )
-from pawtrails.models.review import (
-    AddReviewSchema,
-    Review,
-    ReviewSchema,
-    UpdateReviewSchema,
-)
-from pawtrails.models.user import User, UserSchema
+from pawtrails.models.review import AddReviewSchema, Review, UpdateReviewSchema
+from pawtrails.models.user import User
 
 router = APIRouter()
 
@@ -33,12 +27,12 @@ async def _check_ownership(user: User, loc: Location) -> None:
         )
 
 
-@router.get("/", response_model=List[LocationSchema])
+@router.get("/", response_model=List[Location])
 async def get_locations(skip: int = 0, limit: int = 100) -> List[Location]:
     return Location.get_all(skip, limit)
 
 
-@router.post("/search", response_model=List[LocationSchema])
+@router.post("/search", response_model=List[Location])
 async def search_locations(
     search_in: SearchLocationSchema,
     current_user: User = Depends(get_current_active_user),
@@ -60,7 +54,7 @@ async def search_locations(
     return Location.search(params)
 
 
-@router.post("/", response_model=LocationSchema)
+@router.post("/", response_model=Location)
 async def add_location(
     loc_in: AddLocationSchema, current_user: User = Depends(get_current_active_user)
 ) -> Location:
@@ -70,7 +64,7 @@ async def add_location(
     return loc
 
 
-@router.get("/{uuid}", response_model=LocationSchema)
+@router.get("/{uuid}", response_model=Location)
 async def get_location(uuid: str) -> Location:
     loc = cast(Location, Location.get_by_uuid(uuid))
     if not loc:
@@ -90,7 +84,7 @@ async def delete_location(
     loc.delete()
 
 
-@router.patch("/{uuid}", response_model=LocationSchema)
+@router.patch("/{uuid}", response_model=Location)
 async def update_location(
     loc_in: UpdateLocationSchema,
     uuid: str,
@@ -103,13 +97,13 @@ async def update_location(
     return loc
 
 
-@router.get("/{uuid}/favorite", response_model=List[UserSchema])
+@router.get("/{uuid}/favorite", response_model=List[User])
 async def get_location_favorites(uuid: str) -> List[User]:
     loc = await get_location(uuid)
     return loc.favorites
 
 
-@router.post("/{uuid}/favorite", response_model=UserSchema)
+@router.post("/{uuid}/favorite", response_model=User)
 async def add_favorite(
     uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> User:
@@ -128,13 +122,13 @@ async def remove_favorite(
     current_user.save()
 
 
-@router.get("/{uuid}/review", response_model=List[ReviewSchema])
+@router.get("/{uuid}/review", response_model=List[Review])
 async def get_reviews(uuid: str) -> List[Review]:
     loc = await get_location(uuid)
     return loc.reviews
 
 
-@router.post("/{uuid}/review", response_model=ReviewSchema)
+@router.post("/{uuid}/review", response_model=Review)
 async def add_review(
     rew_in: AddReviewSchema,
     uuid: str,
@@ -148,7 +142,7 @@ async def add_review(
     return rew
 
 
-@router.get("/{uuid}/review/{review_uuid}", response_model=ReviewSchema)
+@router.get("/{uuid}/review/{review_uuid}", response_model=Review)
 async def get_review(uuid: str, review_uuid: str) -> Review:
     loc = await get_location(uuid)  # noqa
     rew = cast(Review, Review.get_by_uuid(review_uuid))
@@ -180,7 +174,7 @@ async def remove_review(
     rew.delete()
 
 
-@router.patch("/{uuid}/review/{review_uuid}", response_model=ReviewSchema)
+@router.patch("/{uuid}/review/{review_uuid}", response_model=Review)
 async def update_review(
     uuid: str,
     review_uuid: str,

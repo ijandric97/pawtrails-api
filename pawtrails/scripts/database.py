@@ -1,3 +1,5 @@
+# type: ignore
+# FIXME: Fix this script, currently ignored by mypy
 from typing import List
 
 from pawtrails.core.database import graph

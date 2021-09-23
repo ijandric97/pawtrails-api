@@ -9,15 +9,29 @@ from pawtrails.core.settings import settings
 
 
 class Token(Schema):
+    """
+    A structure containing the JWT access token and its type (e.g. bearer)
+    """
+
     access_token: str
+    """The JWT access token"""
+
     token_type: str
+    """Type of the JWT token (for example: 'bearer')"""
 
 
 class TokenData(Schema):
+    """
+    A structure which contains the data that should be encoded in the Token.
+    For now that is only the UUID of the currently logged in user.
+    """
+
     uuid: str = ""
+    """Unique record ID of the currently logged in user."""
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+"""A reference to the bcrypt CryptContext object."""
 
 
 def create_access_token(
@@ -38,10 +52,12 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(
             minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
         )
+
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(
         to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
     )
+
     return encoded_jwt
 
 

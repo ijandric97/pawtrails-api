@@ -22,11 +22,18 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+
+# Include our API routes
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
 @app.get("/healthcheck", status_code=200)
 async def healthcheck() -> str:
+    """Returns 'OK' to indicate that the API is working as expected.
+
+    Returns:
+        str: "OK" string and HTTP 200 status.
+    """
     return "OK"
 
 

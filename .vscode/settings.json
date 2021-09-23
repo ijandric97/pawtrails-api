@@ -24,5 +24,10 @@
         "**/venv": true,
         "**/.pytest_cache": true,
     },
+    "editor.rulers": [
+        88
+    ],
     "python.pythonPath": "venv/bin/python",
+    "autoDocstring.docstringFormat": "google",
+    "autoDocstring.includeExtendedSummary": true,
 }

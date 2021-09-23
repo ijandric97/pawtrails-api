@@ -5,8 +5,8 @@ from fastapi.param_functions import Depends
 
 from pawtrails.api.deps import get_current_active_user
 from pawtrails.api.v0.routes.user import get_user_by_uuid
-from pawtrails.models.pet import AddPetSchema, Pet, PetSchema, UpdatePetSchema
-from pawtrails.models.user import User, UserSchema
+from pawtrails.models.pet import AddPetSchema, Pet, UpdatePetSchema
+from pawtrails.models.user import User
 
 router = APIRouter()
 
@@ -19,12 +19,12 @@ async def _check_ownership(user: User, pet: Pet) -> None:
         )
 
 
-@router.get("/", response_model=List[PetSchema])
+@router.get("/", response_model=List[Pet])
 async def get_all_pets() -> List[Pet]:
     return Pet.get_all()
 
 
-@router.post("/", response_model=PetSchema)
+@router.post("/", response_model=Pet)
 async def add_pet(
     pet_in: AddPetSchema, current_user: User = Depends(get_current_active_user)
 ) -> Pet:
@@ -34,7 +34,7 @@ async def add_pet(
     return pet
 
 
-@router.get("/{uuid}", response_model=PetSchema)
+@router.get("/{uuid}", response_model=Pet)
 async def get_pet(uuid: str) -> Pet:
     pet = cast(Pet, Pet.get_by_uuid(uuid))
     if not pet:
@@ -55,7 +55,7 @@ async def delete_pet(
     pet.delete()  # TODO: Perhaps we should just remove it from this owner
 
 
-@router.patch("/{uuid}", response_model=PetSchema)
+@router.patch("/{uuid}", response_model=Pet)
 async def update_pet(
     pet_in: UpdatePetSchema,
     uuid: str,
@@ -68,13 +68,13 @@ async def update_pet(
     return pet
 
 
-@router.get("/{uuid}/owner", response_model=List[UserSchema])
+@router.get("/{uuid}/owner", response_model=List[User])
 async def get_pet_owners(uuid: str) -> List[User]:
     pet = await get_pet(uuid)
     return pet.owners
 
 
-@router.post("/{uuid}/owner", response_model=PetSchema)
+@router.post("/{uuid}/owner", response_model=Pet)
 async def add_pet_owner(
     uuid: str, user_uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> Pet:
@@ -92,7 +92,7 @@ async def add_pet_owner(
     return pet
 
 
-@router.delete("/{uuid}/owner", response_model=PetSchema)
+@router.delete("/{uuid}/owner", response_model=Pet)
 async def remove_pet_owner(
     uuid: str, user_uuid: str, current_user: User = Depends(get_current_active_user)
 ) -> Pet:

@@ -12,6 +12,7 @@ AllowedLocationTypes = Literal[
     "Other",
     "other",
 ]
+
 AllowedLocationSizes = Literal[
     "Mini",
     "mini",
@@ -24,7 +25,9 @@ AllowedLocationSizes = Literal[
     "Giant",
     "giant",
 ]
+
 AllowedPetEnergies = Literal[1, 2, 3, 4, 5]
+
 AllowedPetSizes = Literal[
     "Mini",
     "mini",
@@ -37,7 +40,9 @@ AllowedPetSizes = Literal[
     "Giant",
     "giant",
 ]
+
 AllowedReviewGrades = Literal[1, 2, 3, 4, 5]
+
 AllowedTagColors = Literal[
     "primary", "secondary", "success", "danger", "warning", "info", "light", "dark"
 ]
